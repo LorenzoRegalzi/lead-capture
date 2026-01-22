@@ -98,14 +98,14 @@ export default function Home() {
         <div className="w-full max-w-sm bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4">
           <h2 className="font-semibold mb-2 text-blue-700">Lead Information</h2>
 
-          <p><strong>Name:</strong> {lead.profile?.first_name} {lead.profile?.last_name}</p>
-          <p><strong>Email:</strong> {lead.profile?.email ?? "N/A"}</p>
-          <p><strong>Company:</strong> {lead.profile?.company ?? "N/A"}</p>
-          <p><strong>Title:</strong> {lead.profile?.title ?? "N/A"}</p>
+          <p  className="text-black" ><strong className="text-black" >Name:</strong> {lead.profile?.first_name} {lead.profile?.last_name}</p>
+          <p  className="text-black" ><strong  className="text-black" >Email:</strong> {lead.profile?.email ?? "N/A"}</p>
+          <p  className="text-black" ><strong  className="text-black" >Company:</strong> {lead.profile?.company ?? "N/A"}</p>
+          <p  className="text-black" ><strong  className="text-black" >Title:</strong> {lead.profile?.title ?? "N/A"}</p>
 
           <textarea
             placeholder="Add notes here..."
-            className="w-full mt-2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full mt-2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
             value={lead.notes || ""}
             onChange={(e) => setLead({ ...lead, notes: e.target.value })}
           />
@@ -114,7 +114,8 @@ export default function Home() {
             className="mt-4 w-full bg-blue-600 text-white py-2 rounded shadow-md hover:bg-blue-700 active:bg-blue-800"
             onClick={async () => {
               try {
-                const res = await fetch("https://script.google.com/macros/s/AKfycbwrn97-tCN81KVh13VwAiyXdJIpxUJIq67dtIOVX3ShzPeR8uSWud3F2qLCpRTGip8L/exec", {
+                const res =
+                await fetch("/api/save-lead", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
