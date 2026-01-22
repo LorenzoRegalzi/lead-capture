@@ -74,6 +74,7 @@ export default function Home() {
       {!barcode && (
         <QrScanner
           onScan={(code) => {
+            console.log("scan", code)
             setBarcode(code);
             fetchLead(code);
           }}
@@ -113,7 +114,7 @@ export default function Home() {
             className="mt-4 w-full bg-blue-600 text-white py-2 rounded shadow-md hover:bg-blue-700 active:bg-blue-800"
             onClick={async () => {
               try {
-                const res = await fetch("https://script.google.com/macros/s/AKfycbx5UIsQ6WlxTHNuo4-eQmiZkD1iTjRBv_8Ai_wFz9RTkR92paWmd7MufYAF_x8QhRb-/exec", {
+                const res = await fetch("https://script.google.com/macros/s/AKfycbwrn97-tCN81KVh13VwAiyXdJIpxUJIq67dtIOVX3ShzPeR8uSWud3F2qLCpRTGip8L/exec", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({

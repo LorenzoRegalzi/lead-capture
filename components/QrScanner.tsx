@@ -1,89 +1,128 @@
 "use client";
 
-import { Html5Qrcode } from "html5-qrcode";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import {
+  Scanner,
+  useDevices,
+  outline,
+  boundingBox,
+  centerText,
+} from "@yudiel/react-qr-scanner";
+
+const styles = {
+  container: {
+    width: 400,
+    margin: "auto",
+  },
+  controls: {
+    marginBottom: 8,
+  },
+};
 
 type Props = {
   onScan: (barcode: string) => void;
 };
 
 export default function QrScanner({ onScan }: Props) {
-  const readerRef = useRef<Html5Qrcode | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [noQrMessage, setNoQrMessage] = useState(false);
+  const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
+  const [tracker, setTracker] = useState<string | undefined>("centerText");
+  const [pause, setPause] = useState(false);
 
-  useEffect(() => {
-    readerRef.current = new Html5Qrcode("qr-reader");
+  const devices = useDevices();
 
-    return () => {
-      readerRef.current?.stop().catch(() => {});
-      readerRef.current?.clear()
-    };
-  }, []);
-
-  async function startScan() {
-    setError(null);
-    setNoQrMessage(false);
-
-    if (!readerRef.current) {
-      setError("Scanner is not initialized.");
-      return;
-    }
-
-    try {
-      await readerRef.current.start(
-        { facingMode: "environment" }, // rear camera only
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          if (isScanning) {
-            readerRef.current?.stop().catch(() => {});
-            setIsScanning(false);
-            setNoQrMessage(false);
-            onScan(decodedText);
-          }
-        },
-        (err) => {
-          // Mostriamo messaggio solo se la camera è attiva ma QR non rilevato
-          if (isScanning) setNoQrMessage(true);
-          console.debug("QR scan error:", err);
-        }
-      );
-      setIsScanning(true);
-    } catch (err) {
-      console.log("error", err);
-      setError(
-        "Camera access is blocked. Please enable camera permissions in your browser settings."
-      );
+  function getTracker() {
+    switch (tracker) {
+      case "outline":
+        return outline;
+      case "boundingBox":
+        return boundingBox;
+      case "centerText":
+        return centerText;
+      default:
+        return undefined;
     }
   }
 
-  return (
-    <div className="h-[100dvh] w-screen flex flex-col items-center justify-center gap-4 bg-white p-4">
+  const handleScan = async (data: string) => {
+    setPause(true);
+    try {
       
-      <div
-        id="qr-reader"
-        className="w-full max-w-sm aspect-square border-4 border-dashed border-blue-400 mx-auto"
+      alert("Success! Welcome to the conference.");
+        onScan(data);
+      
+    } catch (error: unknown) {
+      console.log(error);
+    } finally {
+      setPause(false);
+    }
+  };
+
+  return (
+    <div>
+      <div style={styles.controls}>
+        <select onChange={(e) => setDeviceId(e.target.value)}>
+          <option value={undefined}>Select a device</option>
+          {devices.map((device, index) => (
+            <option key={index} value={device.deviceId}>
+              {device.label}
+            </option>
+          ))}
+        </select>
+        <select
+          style={{ marginLeft: 5 }}
+          onChange={(e) => setTracker(e.target.value)}
+        >
+          <option value="centerText">Center Text</option>
+          <option value="outline">Outline</option>
+          <option value="boundingBox">Bounding Box</option>
+          <option value={undefined}>No Tracker</option>
+        </select>
+      </div>
+      <Scanner
+        formats={[
+          "qr_code",
+          "micro_qr_code",
+          "rm_qr_code",
+          "maxi_code",
+          "pdf417",
+          "aztec",
+          "data_matrix",
+          "matrix_codes",
+          "dx_film_edge",
+          "databar",
+          "databar_expanded",
+          "codabar",
+          "code_39",
+          "code_93",
+          "code_128",
+          "ean_8",
+          "ean_13",
+          "itf",
+          "linear_codes",
+          "upc_a",
+          "upc_e",
+        ]}
+        constraints={{
+          deviceId: deviceId,
+        }}
+        onScan={(detectedCodes) => {
+          handleScan(detectedCodes[0].rawValue);
+        }}
+        onError={(error) => {
+          console.log(`onError: ${error}'`);
+        }}
+        styles={{ container: { height: "400px", width: "350px" } }}
+        components={{
+          onOff: true,
+          torch: true,
+          zoom: true,
+          finder: true,
+          tracker: getTracker(),
+        }}
+        allowMultiple={true}
+        scanDelay={2000}
+        paused={pause}
       />
-
-      <button
-        onClick={startScan}
-        className="w-full py-4 text-lg font-semibold rounded-lg
-                   bg-blue-600 hover:bg-blue-700 active:bg-blue-800
-                   text-white shadow-md"
-      >
-        Scan QR Code
-      </button>
-
-      {error && (
-        <p className="text-red-600 text-center text-sm px-4">{error}</p>
-      )}
-
-      {noQrMessage && !error && (
-        <p className="text-gray-700 text-center text-sm px-4 mt-2">
-          No QR code detected. Please align the QR code inside the frame.
-        </p>
-      )}
     </div>
   );
 }
