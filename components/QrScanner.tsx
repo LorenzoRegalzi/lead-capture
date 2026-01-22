@@ -18,7 +18,7 @@ export default function QrScanner({ onScan }: Props) {
 
     return () => {
       readerRef.current?.stop().catch(() => {});
-      readerRef.current?.clear().catch(() => {});
+      readerRef.current?.clear()
     };
   }, []);
 
