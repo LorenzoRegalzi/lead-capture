@@ -16,12 +16,12 @@ export async function GET(req: Request) {
   //var licenseCode = process.env.LEAD_LICENSE_CODE;
   var licenseCode = "";
 
-  if (!licenseCode) {
-    return NextResponse.json(
-      { error: "Server misconfigured" },
-      { status: 500 }
-    );
-  }
+//   if (!licenseCode) {
+//     return NextResponse.json(
+//       { error: "Server misconfigured" },
+//       { status: 500 }
+//     );
+//   }
 
   licenseCode = "0";
 
