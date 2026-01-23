@@ -64,7 +64,7 @@ export default function QrScanner({ onScan }: Props) {
 
   return (
     <div>
-      <div style={styles.controls}>
+      {/* <div style={styles.controls}>
         <select onChange={(e) => setDeviceId(e.target.value)}>
           <option value={undefined}>Select a device</option>
           {devices.map((device, index) => (
@@ -82,7 +82,7 @@ export default function QrScanner({ onScan }: Props) {
           <option value="boundingBox">Bounding Box</option>
           <option value={undefined}>No Tracker</option>
         </select>
-      </div>
+      </div> */}
       <Scanner
         formats={[
           "qr_code",
