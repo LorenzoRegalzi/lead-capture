@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const barcode = searchParams.get("barcode");
+  let barcode = searchParams.get("barcode");
+
+  console.log("Received barcode:", barcode);
 
   if (!barcode) {
     return NextResponse.json(
@@ -11,7 +13,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const licenseCode = process.env.LEAD_LICENSE_CODE;
+  var licenseCode = process.env.LEAD_LICENSE_CODE;
 
   if (!licenseCode) {
     return NextResponse.json(
@@ -20,9 +22,16 @@ export async function GET(req: Request) {
     );
   }
 
+  licenseCode = "0";
+
+  barcode = "0";
+  
+
   const url = `https://pluslead.mcievents.com/api/sdk/capture?license_code=${encodeURIComponent(
     licenseCode
   )}&barcode=${encodeURIComponent(barcode)}`;
+
+  
 
   try {
     const res = await fetch(url, {

@@ -9,53 +9,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // async function fetchLead(code: string) {
-  //   setLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     const res = await fetch(`/api/capture-lead?barcode=${encodeURIComponent(code)}`);
-  //     if (!res.ok) throw new Error();
-
-  //     const data = await res.json();
-  //     setLead(data);
-  //   } catch {
-  //     setError("Unable to retrieve lead data. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
-  function reset() {
-    setBarcode(null);
-    setLead(null);
-    setError(null);
-  }
-
   async function fetchLead(code: string) {
     setLoading(true);
     setError(null);
 
     try {
-      // MOCK DATA per test
-      const data = {
-        lead_id: "demo-0001",
-        profile: {
-          first_name: "John",
-          last_name: "Doe",
-          email: "john.doe@example.com",
-          company: "Acme Corp",
-          title: "Marketing Manager",
-          demographics: [
-            { question: "First time attending?", answers: ["Yes"] }
-          ]
-        },
-        notes: ""
-      };
-
-      // Simula delay rete
-      await new Promise((r) => setTimeout(r, 500));
-
+      const res = await fetch(`/api/capture-lead?barcode=${encodeURIComponent(code)}`);
+      if (!res.ok) throw new Error();
+      console.log("fetchLead response", res);
+      const data = await res.json();
       setLead(data);
     } catch {
       setError("Unable to retrieve lead data. Please try again.");
@@ -63,6 +25,44 @@ export default function Home() {
       setLoading(false);
     }
   }
+
+  function reset() {
+    setBarcode(null);
+    setLead(null);
+    setError(null);
+  }
+
+  // async function fetchLead(code: string) {
+  //   setLoading(true);
+  //   setError(null);
+
+  //   try {
+  //     // MOCK DATA per test
+  //     const data = {
+  //       lead_id: "demo-0001",
+  //       profile: {
+  //         first_name: "John",
+  //         last_name: "Doe",
+  //         email: "john.doe@example.com",
+  //         company: "Acme Corp",
+  //         title: "Marketing Manager",
+  //         demographics: [
+  //           { question: "First time attending?", answers: ["Yes"] }
+  //         ]
+  //       },
+  //       notes: ""
+  //     };
+
+  //     // Simula delay rete
+  //     await new Promise((r) => setTimeout(r, 500));
+
+  //     setLead(data);
+  //   } catch {
+  //     setError("Unable to retrieve lead data. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   return (
     <main className="h-[100dvh] w-screen flex flex-col items-center justify-center p-4 bg-white">

@@ -24,6 +24,7 @@ type Props = {
 };
 
 export default function QrScanner({ onScan }: Props) {
+
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
   const [tracker, setTracker] = useState<string | undefined>("centerText");
   const [pause, setPause] = useState(false);
@@ -43,17 +44,21 @@ export default function QrScanner({ onScan }: Props) {
     }
   }
 
+
+
+
+
+
+
   const handleScan = async (data: string) => {
     setPause(true);
     try {
-      
-      alert("Success! Welcome to the conference.");
+        alert("Success! Welcome to the conference.");
         onScan(data);
-      
     } catch (error: unknown) {
-      console.log(error);
+        console.log(error);
     } finally {
-      setPause(false);
+        setPause(false);
     }
   };
 
