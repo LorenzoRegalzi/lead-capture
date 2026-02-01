@@ -7,23 +7,19 @@ import CompanyCodeInput from "@/components/CompanyCodeInput";
 export default function Home() {
   const [barcode, setBarcode] = useState<string | null>(null);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
-  
-
-
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-
 
   async function fetchLead(code: string) {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`/api/capture-lead?barcode=${encodeURIComponent(code)}`);
+      const res = await fetch(
+        `/api/capture-lead?barcode=${encodeURIComponent(code)}`
+      );
       if (!res.ok) throw new Error();
-      console.log("fetchLead response", res);
       const data = await res.json();
       setLead(data);
     } catch {
@@ -39,18 +35,15 @@ export default function Home() {
     setError(null);
   }
 
- 
-
   return (
     <main className="h-[100dvh] w-screen flex flex-col items-center justify-center p-4 bg-white">
-
-     
-
-      {companyCode == null &&
-        <CompanyCodeInput onSubmit={(code) => {
-          setCompanyCode(code);
-        }} />
-      }
+      {companyCode == null && (
+        <CompanyCodeInput
+          onSubmit={(code) => {
+            setCompanyCode(code);
+          }}
+        />
+      )}
 
       {companyCode !== null && (
         <>
@@ -60,14 +53,37 @@ export default function Home() {
           <h1 className="text-2xl font-bold mb-6 text-blue-700">
             Scan barcode
           </h1>
-          <QrScanner
-            onScan={(code) => {
-              console.log("scan", code)
-              alert("Success! The barcode: " + code);
-              // setBarcode(code);
-              // fetchLead(code);
-            }}
-          />
+          {/* Mostra lo scanner solo se non c'è barcode e non ci sono dati lead */}
+          {!barcode && !lead && (
+            <QrScanner
+              onScan={(code) => {
+                setBarcode(code);
+              }}
+            />
+          )}
+          {/* Mostra la conferma barcode */}
+          {barcode && !lead && (
+            <div className="flex flex-col items-center">
+              <div className="mb-4 text-lg text-black">
+                Barcode scanned: <span className="font-mono">{barcode}</span>
+              </div>
+              <div className="flex gap-4">
+                
+                <button
+                  className="bg-gray-300 text-black px-4 py-2 rounded"
+                  onClick={() => setBarcode(null)}
+                >
+                  Retry
+                </button>
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                  onClick={() => setBarcode(null)}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -84,14 +100,27 @@ export default function Home() {
           </button>
         </div>
       )}
-      {lead && ( 
+
+      {lead && (
         <div className="w-full max-w-sm bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4">
           <h2 className="font-semibold mb-2 text-blue-700">Lead Information</h2>
 
-          <p  className="text-black" ><strong className="text-black" >Name:</strong> {lead.profile?.first_name} {lead.profile?.last_name}</p>
-          <p  className="text-black" ><strong  className="text-black" >Email:</strong> {lead.profile?.email ?? "N/A"}</p>
-          <p  className="text-black" ><strong  className="text-black" >Company:</strong> {lead.profile?.company ?? "N/A"}</p>
-          <p  className="text-black" ><strong  className="text-black" >Title:</strong> {lead.profile?.title ?? "N/A"}</p>
+          <p className="text-black">
+            <strong className="text-black">Name:</strong>{" "}
+            {lead.profile?.first_name} {lead.profile?.last_name}
+          </p>
+          <p className="text-black">
+            <strong className="text-black">Email:</strong>{" "}
+            {lead.profile?.email ?? "N/A"}
+          </p>
+          <p className="text-black">
+            <strong className="text-black">Company:</strong>{" "}
+            {lead.profile?.company ?? "N/A"}
+          </p>
+          <p className="text-black">
+            <strong className="text-black">Title:</strong>{" "}
+            {lead.profile?.title ?? "N/A"}
+          </p>
 
           <textarea
             placeholder="Add notes here..."
@@ -104,8 +133,7 @@ export default function Home() {
             className="mt-4 w-full bg-blue-600 text-white py-2 rounded shadow-md hover:bg-blue-700 active:bg-blue-800"
             onClick={async () => {
               try {
-                const res =
-                await fetch("/api/save-lead", {
+                const res = await fetch("/api/save-lead", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -116,7 +144,7 @@ export default function Home() {
                     company: lead.profile?.company,
                     title: lead.profile?.title,
                     demographics: lead.profile?.demographics,
-                    notes: lead.notes || ""
+                    notes: lead.notes || "",
                   }),
                 });
                 const data = await res.json();
@@ -142,7 +170,6 @@ export default function Home() {
           </button>
         </div>
       )}
-
     </main>
   );
 }
