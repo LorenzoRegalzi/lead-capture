@@ -2,12 +2,19 @@
 
 import { useState } from "react";
 import QrScanner from "@/components/QrScanner";
+import CompanyCodeInput from "@/components/CompanyCodeInput";
 
 export default function Home() {
   const [barcode, setBarcode] = useState<string | null>(null);
+  const [companyCode, setCompanyCode] = useState<string | null>(null);
+  
+
+
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
 
   async function fetchLead(code: string) {
     setLoading(true);
@@ -32,54 +39,36 @@ export default function Home() {
     setError(null);
   }
 
-  // async function fetchLead(code: string) {
-  //   setLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     // MOCK DATA per test
-  //     const data = {
-  //       lead_id: "demo-0001",
-  //       profile: {
-  //         first_name: "John",
-  //         last_name: "Doe",
-  //         email: "john.doe@example.com",
-  //         company: "Acme Corp",
-  //         title: "Marketing Manager",
-  //         demographics: [
-  //           { question: "First time attending?", answers: ["Yes"] }
-  //         ]
-  //       },
-  //       notes: ""
-  //     };
-
-  //     // Simula delay rete
-  //     await new Promise((r) => setTimeout(r, 500));
-
-  //     setLead(data);
-  //   } catch {
-  //     setError("Unable to retrieve lead data. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
+ 
 
   return (
     <main className="h-[100dvh] w-screen flex flex-col items-center justify-center p-4 bg-white">
 
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">
-        Lead Capture
-      </h1>
+     
 
-      {!barcode && (
-        <QrScanner
-          onScan={(code) => {
-            console.log("scan", code)
-            alert("Success! The barcode: " + code);
-            // setBarcode(code);
-            // fetchLead(code);
-          }}
-        />
+      {companyCode == null &&
+        <CompanyCodeInput onSubmit={(code) => {
+          setCompanyCode(code);
+        }} />
+      }
+
+      {companyCode !== null && (
+        <>
+          <h1 className="text-2xl font-bold mb-6 text-blue-700">
+            Company code: {companyCode}
+          </h1>
+          <h1 className="text-2xl font-bold mb-6 text-blue-700">
+            Scan barcode
+          </h1>
+          <QrScanner
+            onScan={(code) => {
+              console.log("scan", code)
+              alert("Success! The barcode: " + code);
+              // setBarcode(code);
+              // fetchLead(code);
+            }}
+          />
+        </>
       )}
 
       {loading && <p className="mt-4">Loading lead data...</p>}
