@@ -75,8 +75,9 @@ export default function Home() {
         <QrScanner
           onScan={(code) => {
             console.log("scan", code)
-            setBarcode(code);
-            fetchLead(code);
+            alert("Success! The barcode: " + code);
+            // setBarcode(code);
+            // fetchLead(code);
           }}
         />
       )}
