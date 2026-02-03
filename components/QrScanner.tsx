@@ -24,7 +24,6 @@ type Props = {
 };
 
 export default function QrScanner({ onScan }: Props) {
-
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
   const [tracker, setTracker] = useState<string | undefined>("centerText");
   const [pause, setPause] = useState(false);
@@ -44,16 +43,15 @@ export default function QrScanner({ onScan }: Props) {
     }
   }
 
-
   const handleScan = async (data: string) => {
     //setPause(true);
     try {
-        //alert("Success! Welcome to the conference.");
-        onScan(data);
+      //alert("Success! Welcome to the conference.");
+      onScan(data);
     } catch (error: unknown) {
-        console.log(error);
+      console.log(error);
     } finally {
-        //setPause(false);
+      //setPause(false);
     }
   };
 
@@ -80,38 +78,27 @@ export default function QrScanner({ onScan }: Props) {
       </div> */}
       <Scanner
         formats={[
-          "qr_code",
-          "micro_qr_code",
-          "rm_qr_code",
-          "maxi_code",
-          "pdf417",
-          "aztec",
-          "data_matrix",
-          "matrix_codes",
-          "dx_film_edge",
-          "databar",
-          "databar_expanded",
-          "codabar",
           "code_39",
           "code_93",
           "code_128",
           "ean_8",
           "ean_13",
           "itf",
-          "linear_codes",
           "upc_a",
           "upc_e",
+          "codabar",
+          // aggiungi altri formati lineari se necessario
         ]}
         constraints={{
           deviceId: deviceId,
         }}
         onScan={(detectedCodes) => {
-          handleScan(detectedCodes[0].rawValue);
+          if (detectedCodes[0]) handleScan(detectedCodes[0].rawValue);
         }}
         onError={(error) => {
           console.log(`onError: ${error}'`);
         }}
-        styles={{ container: { height: "400px", width: "350px" } }}
+        styles={{ container: { height: "450px", width: "380px" } }} // area più grande
         components={{
           onOff: true,
           torch: true,
@@ -119,8 +106,8 @@ export default function QrScanner({ onScan }: Props) {
           finder: true,
           tracker: getTracker(),
         }}
-        allowMultiple={true}
-        scanDelay={2000}
+        allowMultiple={false}
+        scanDelay={1000}
         paused={pause}
       />
     </div>
