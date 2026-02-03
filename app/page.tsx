@@ -4,6 +4,8 @@ import { useState } from "react";
 import QrScanner from "@/components/QrScanner";
 import CompanyCodeInput from "@/components/CompanyCodeInput";
 import QrScanner2 from "@/components/QrScanner2";
+import QrScanner3 from "@/components/QrScanner3";
+import { SparkScanScannerComponent } from "@/components/ScanditScanner";
 
 type BarcodeItem = {
   barcode: string;
@@ -94,8 +96,8 @@ export default function Home() {
           <h1 className="text-2xl font-bold mb-6 text-blue-700">
             Scan barcode
           </h1>
-          <QrScanner2
-            onScan={addBarcode}
+          <SparkScanScannerComponent
+            
           />
           {/* Lista barcode */}
           {barcodes.length > 0 && (
