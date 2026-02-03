@@ -44,14 +44,14 @@ export default function QrScanner({ onScan }: Props) {
   }
 
   const handleScan = async (data: string) => {
-    //setPause(true);
+    setPause(true);
     try {
-      //alert("Success! Welcome to the conference.");
       onScan(data);
+      // Suono feedback
     } catch (error: unknown) {
       console.log(error);
     } finally {
-      //setPause(false);
+      setTimeout(() => setPause(false), 500); // 1 secondo di pausa
     }
   };
 
