@@ -58,25 +58,6 @@ export default function QrScanner({ onScan, containerRef }: Props) {
 
   return (
     <div ref={containerRef}>
-      {/* <div style={styles.controls}>
-        <select onChange={(e) => setDeviceId(e.target.value)}>
-          <option value={undefined}>Select a device</option>
-          {devices.map((device, index) => (
-            <option key={index} value={device.deviceId}>
-              {device.label}
-            </option>
-          ))}
-        </select>
-        <select
-          style={{ marginLeft: 5 }}
-          onChange={(e) => setTracker(e.target.value)}
-        >
-          <option value="centerText">Center Text</option>
-          <option value="outline">Outline</option>
-          <option value="boundingBox">Bounding Box</option>
-          <option value={undefined}>No Tracker</option>
-        </select>
-      </div> */}
       <Scanner
         formats={[
           "code_128",
@@ -87,7 +68,7 @@ export default function QrScanner({ onScan, containerRef }: Props) {
           deviceId: deviceId,
         }}
         onScan={(detectedCodes) => {
-          if (detectedCodes[0]) handleScan(detectedCodes[0].rawValue);
+          handleScan(detectedCodes[0].rawValue);
         }}
         onError={(error) => {
           console.log(`onError: ${error}'`);
