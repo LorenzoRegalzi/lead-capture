@@ -7,37 +7,14 @@ import CompanyCodeInput from "@/components/CompanyCodeInput";
 type BarcodeItem = {
   barcode: string;
   quantity: number;
+  url: string;
+  companyCode: string | null;
 };
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
-    { barcode: "123456789012", quantity: 2 },
-    { barcode: "987654321098", quantity: 1 },
-    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
+    { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
@@ -50,6 +27,8 @@ export default function Home() {
   const [showAddManual, setShowAddManual] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [manualQuantity, setManualQuantity] = useState(1);
+  const [sending, setSending] = useState(false);
+  const [submitResult, setSubmitResult] = useState<string | null>(null);
 
   function fetchLead(code: string) {
     setLoading(true);
@@ -79,7 +58,10 @@ export default function Home() {
         updated[idx].quantity += 1;
         return updated;
       }
-      return [...prev, { barcode: code, quantity: 1 }];
+      return [
+        ...prev,
+        { barcode: code, quantity: 1, url: "test", companyCode },
+      ];
     });
     fetchLead(code);
   }
@@ -93,7 +75,15 @@ export default function Home() {
         updated[idx].quantity += manualQuantity;
         return updated;
       }
-      return [...prev, { barcode: manualBarcode.trim(), quantity: manualQuantity }];
+      return [
+        ...prev,
+        {
+          barcode: manualBarcode.trim(),
+          quantity: manualQuantity,
+          url: "test",
+          companyCode,
+        },
+      ];
     });
     setManualBarcode("");
     setManualQuantity(1);
@@ -123,12 +113,48 @@ export default function Home() {
 
   // Sezione submit
   if (showSubmit) {
+    async function handleProceed() {
+      setSending(true);
+      setSubmitResult(null);
+      try {
+        const res = await fetch("/api/save-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            companyCode,
+            barcodes,
+          }),
+        });
+        const data = await res.json();
+        if (data.status === "ok") {
+          setSubmitResult("Dati inviati con successo!");
+        } else {
+          setSubmitResult("Errore: " + (data.message || "Invio fallito"));
+        }
+      } catch (err) {
+        setSubmitResult("Errore di rete");
+      } finally {
+        setSending(false);
+      }
+    }
+
     return (
       <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
         <h1 className="text-2xl font-bold text-blue-700 mb-8">eccoci</h1>
         <button
+          className="bg-green-600 text-white px-4 py-2 rounded mb-4"
+          onClick={handleProceed}
+          disabled={sending}
+        >
+          {sending ? "Invio in corso..." : "Proceed"}
+        </button>
+        {submitResult && (
+          <div className="mb-4 text-center text-blue-700">{submitResult}</div>
+        )}
+        <button
           className="bg-blue-600 text-white px-4 py-2 rounded"
           onClick={() => setShowSubmit(false)}
+          disabled={sending}
         >
           Back
         </button>
