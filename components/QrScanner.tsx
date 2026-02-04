@@ -60,10 +60,17 @@ export default function QrScanner({ onScan, containerRef }: Props) {
     <div ref={containerRef}>
       <Scanner
         formats={[
-          "code_128",
-          // aggiungi altri formati lineari se necessario
+            "code_128",
+            "code_39",
+            "code_93",
+            "codabar",
+            "ean_13",
+            "ean_8",
+            "itf",
+            "upc_a",
+            "upc_e",       
         ]}
-        scanDelay={1000} // 1 secondo di pausa tra scansioni
+        scanDelay={3000} // 1 secondo di pausa tra scansioni
         constraints={{
           deviceId: deviceId,
         }}
