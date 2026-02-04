@@ -29,6 +29,7 @@ export default function Home() {
   const [manualQuantity, setManualQuantity] = useState(1);
   const [sending, setSending] = useState(false);
   const [submitResult, setSubmitResult] = useState<string | null>(null);
+  const [showScanOverlay, setShowScanOverlay] = useState(false);
 
   function fetchLead(code: string) {
     setLoading(true);
@@ -110,6 +111,10 @@ export default function Home() {
     });
   }
 
+  function handleScan(code: string) {
+    addBarcode(code);
+    setShowScanOverlay(true);
+  }
 
   // Sezione submit
   if (showSubmit) {
@@ -216,7 +221,7 @@ export default function Home() {
       {companyCode !== null && (
         <div className="w-full flex flex-col justify-center h-[100vh]">
           <div className="flex items-center justify-center w-full">
-            <QrScanner onScan={addBarcode} />
+            <QrScanner onScan={handleScan} />
           </div>
           <div
             className="w-full bg-gray-50 border-t border-gray-200 p-4 overflow-y-auto flex-1 flex flex-col"
@@ -284,6 +289,16 @@ export default function Home() {
           >
             Try again
           </button>
+        </div>
+      )}
+
+      {showScanOverlay && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setShowScanOverlay(false)}
+          style={{ cursor: "pointer" }}
+        >
+          <span className="text-white text-4xl font-bold">Scan</span>
         </div>
       )}
     </main>

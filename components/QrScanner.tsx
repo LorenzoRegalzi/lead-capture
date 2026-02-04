@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Scanner,
   useDevices,
@@ -28,7 +28,7 @@ export default function QrScanner({ onScan, containerRef }: Props) {
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
   const [tracker, setTracker] = useState<string | undefined>("centerText");
   const [pause, setPause] = useState(false);
- const processingScanRef = useRef(false);
+
   const devices = useDevices();
 
   function getTracker() {
@@ -45,12 +45,14 @@ export default function QrScanner({ onScan, containerRef }: Props) {
   }
 
   const handleScan = async (data: string) => {
-     if (!processingScanRef.current) {
-      processingScanRef.current = true;
+    setPause(true);
+    try {
       onScan(data);
-      setTimeout(() => {
-        processingScanRef.current = false;
-      }, 3000); // 3 secondi di blocco
+      // Suono feedback
+    } catch (error: unknown) {
+      console.log(error);
+    } finally {
+      setTimeout(() => setPause(false), 500); // 1 secondo di pausa
     }
   };
 
