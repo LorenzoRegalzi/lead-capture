@@ -13,8 +13,8 @@ type BarcodeItem = {
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
-    { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
+    // { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
+    // { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
