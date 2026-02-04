@@ -71,7 +71,7 @@ export default function QrScanner({ onScan, containerRef }: Props) {
             
             "ean_13", "ean_8"
         ]}
-        scanDelay={3000}
+        paused={pause}
         constraints={{
           deviceId: deviceId,
         }}
