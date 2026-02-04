@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import QrScanner from "@/components/QrScanner";
 import CompanyCodeInput from "@/components/CompanyCodeInput";
-import QrScanner2 from "@/components/QrScanner2";
-import QrScanner3 from "@/components/QrScanner3";
-import { SparkScanScannerComponent } from "@/components/ScanditScanner";
 
 type BarcodeItem = {
   barcode: string;
@@ -13,28 +10,59 @@ type BarcodeItem = {
 };
 
 export default function Home() {
-  const [barcodes, setBarcodes] = useState<BarcodeItem[]>([]);
+  const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    { barcode: "123456789012", quantity: 2 },
+    { barcode: "987654321098", quantity: 1 },
+    { barcode: "555555555555", quantity: 3 },
+    // ...altri dati di test...
+  ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
   const [lead, setLead] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchLead(code: string) {
+  // Sezioni
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [showAddManual, setShowAddManual] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState("");
+  const [manualQuantity, setManualQuantity] = useState(1);
+
+  function fetchLead(code: string) {
     setLoading(true);
     setError(null);
 
-    try {
-      const res = await fetch(
-        `/api/capture-lead?barcode=${encodeURIComponent(code)}`
-      );
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setLead(data);
-    } catch {
-      setError("Unable to retrieve lead data. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    fetch(`/api/capture-lead?barcode=${encodeURIComponent(code)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then((data) => setLead(data))
+      .catch(() => setError("Unable to retrieve lead data. Please try again."))
+      .finally(() => setLoading(false));
   }
 
   function reset() {
@@ -47,15 +75,29 @@ export default function Home() {
     setBarcodes((prev) => {
       const idx = prev.findIndex((b) => b.barcode === code);
       if (idx !== -1) {
-        // Increment quantity if barcode already exists
         const updated = [...prev];
         updated[idx].quantity += 1;
         return updated;
       }
-      // Add new barcode
       return [...prev, { barcode: code, quantity: 1 }];
     });
     fetchLead(code);
+  }
+
+  function addManualBarcode() {
+    if (!manualBarcode.trim() || manualQuantity < 1) return;
+    setBarcodes((prev) => {
+      const idx = prev.findIndex((b) => b.barcode === manualBarcode.trim());
+      if (idx !== -1) {
+        const updated = [...prev];
+        updated[idx].quantity += manualQuantity;
+        return updated;
+      }
+      return [...prev, { barcode: manualBarcode.trim(), quantity: manualQuantity }];
+    });
+    setManualBarcode("");
+    setManualQuantity(1);
+    setShowAddManual(false);
   }
 
   function increment(idx: number) {
@@ -78,61 +120,131 @@ export default function Home() {
     });
   }
 
+
+  // Sezione submit
+  if (showSubmit) {
+    return (
+      <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
+        <h1 className="text-2xl font-bold text-blue-700 mb-8">eccoci</h1>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={() => setShowSubmit(false)}
+        >
+          Back
+        </button>
+      </main>
+    );
+  }
+
+  // Sezione add manual
+  if (showAddManual) {
+    return (
+      <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
+        <div className="max-w-sm w-full bg-gray-50 border border-gray-200 p-4 rounded-lg">
+          <h2 className="font-semibold mb-4 text-blue-700">Add barcode manually</h2>
+          <input
+            type="text"
+            placeholder="Barcode"
+            value={manualBarcode}
+            onChange={e => setManualBarcode(e.target.value)}
+            className="w-full mb-2 p-2 border rounded text-black"
+          />
+          <input
+            type="number"
+            min={1}
+            placeholder="Quantity"
+            value={manualQuantity}
+            onChange={e => setManualQuantity(Number(e.target.value))}
+            className="w-full mb-4 p-2 border rounded text-black"
+          />
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2"
+            onClick={addManualBarcode}
+            disabled={!manualBarcode.trim() || manualQuantity < 1}
+          >
+            Add
+          </button>
+          <button
+            className="bg-gray-300 text-black px-4 py-2 rounded w-full"
+            onClick={() => setShowAddManual(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="h-[100dvh] w-screen flex flex-col items-center justify-center p-4 bg-white">
+    <main className="h-[100dvh] w-screen flex flex-col bg-white">
       {companyCode == null && (
-        <CompanyCodeInput
-          onSubmit={(code) => {
-            setCompanyCode(code);
-          }}
-        />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <CompanyCodeInput
+            onSubmit={(code) => {
+              setCompanyCode(code);
+            }}
+          />
+        </div>
       )}
 
       {companyCode !== null && (
-        <>
-          <h1 className="text-2xl font-bold mb-6 text-blue-700">
-            Company code: {companyCode}
-          </h1>
-          <h1 className="text-2xl font-bold mb-6 text-blue-700">
-            Scan barcode
-          </h1>
-          <SparkScanScannerComponent
-            
-          />
-          {/* Lista barcode */}
-          {barcodes.length > 0 && (
-            <div className="w-full max-w-sm bg-gray-50 border border-gray-200 p-4 rounded-lg mt-4">
-              <h2 className="font-semibold mb-2 text-blue-700">
-                Barcodes scanned
-              </h2>
-              <ul>
-                {barcodes.map((item, idx) => (
-                  <li
-                    key={item.barcode}
-                    className="flex justify-between items-center py-1 text-black"
-                  >
-                    <span className="font-mono">{item.barcode}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="bg-blue-600 text-white px-2 rounded"
-                        onClick={() => increment(idx)}
-                      >
-                        +
-                      </button>
-                      <span>x{item.quantity}</span>
-                      <button
-                        className="bg-gray-300 text-black px-2 rounded"
-                        onClick={() => decrement(idx)}
-                      >
-                        -
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+        <div className="w-full flex flex-col justify-center h-[100vh]">
+          <div className="flex items-center justify-center w-full">
+            <QrScanner onScan={addBarcode} />
+          </div>
+          <div
+            className="w-full bg-gray-50 border-t border-gray-200 p-4 overflow-y-auto flex-1 flex flex-col"
+          >
+            <h2 className="font-semibold mb-2 text-blue-700 flex justify-between items-center">
+              <span>Company code: {companyCode}</span>
+              <span className="text-base text-black font-normal">
+                Total: {barcodes.reduce((acc, cur) => acc + cur.quantity, 0)}
+              </span>
+            </h2>
+            <ul className="flex-1">
+              {barcodes.map((item, idx) => (
+                <li
+                  key={item.barcode + idx}
+                  className="flex justify-between items-center py-1 text-black"
+                  style={{ height: "60px" }}
+                >
+                  <span className="font-mono">{item.barcode}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-blue-700 active:bg-blue-800"
+                      onClick={() => increment(idx)}
+                      aria-label="Increment"
+                    >
+                      +
+                    </button>
+                    <span className="text-lg font-semibold">x{item.quantity}</span>
+                    <button
+                      className="bg-gray-300 text-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-gray-400 active:bg-gray-500"
+                      onClick={() => decrement(idx)}
+                      aria-label="Decrement"
+                    >
+                      −
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-col gap-2 mt-4">
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded w-full"
+                onClick={() => setShowSubmit(true)}
+              >
+                Submit
+              </button>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+                onClick={() => setShowAddManual(true)}
+              >
+                Add
+              </button>
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
 
       {loading && <p className="mt-4">Loading lead data...</p>}

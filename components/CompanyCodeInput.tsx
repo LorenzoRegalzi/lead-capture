@@ -16,7 +16,7 @@ export default function CompanyCodeInput({ onSubmit }: { onSubmit: (code: string
         />
       </div>
       <button
-        className="w-[90%] mx-auto mb-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-t fixed left-1/2 -translate-x-1/2 bottom-0"
+        className="w-[90%] mx-auto mb-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-t fixed left-1/2 -translate-x-1/2 bottom-0 cursor-pointer" 
         disabled={!code.trim()}
         onClick={() => onSubmit(code.trim())}
       >

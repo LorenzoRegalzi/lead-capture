@@ -21,9 +21,10 @@ const styles = {
 
 type Props = {
   onScan: (barcode: string) => void;
+  containerRef?: React.RefObject<HTMLDivElement> | null;
 };
 
-export default function QrScanner({ onScan }: Props) {
+export default function QrScanner({ onScan, containerRef }: Props) {
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
   const [tracker, setTracker] = useState<string | undefined>("centerText");
   const [pause, setPause] = useState(false);
@@ -56,7 +57,7 @@ export default function QrScanner({ onScan }: Props) {
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
       {/* <div style={styles.controls}>
         <select onChange={(e) => setDeviceId(e.target.value)}>
           <option value={undefined}>Select a device</option>
@@ -78,17 +79,10 @@ export default function QrScanner({ onScan }: Props) {
       </div> */}
       <Scanner
         formats={[
-          "code_39",
-          "code_93",
           "code_128",
-          "ean_8",
-          "ean_13",
-          "itf",
-          "upc_a",
-          "upc_e",
-          "codabar",
           // aggiungi altri formati lineari se necessario
         ]}
+        scanDelay={1000} // 1 secondo di pausa tra scansioni
         constraints={{
           deviceId: deviceId,
         }}
@@ -98,7 +92,7 @@ export default function QrScanner({ onScan }: Props) {
         onError={(error) => {
           console.log(`onError: ${error}'`);
         }}
-        styles={{ container: { height: "450px", width: "380px" } }} // area più grande
+        styles={{ container: { width: "100%" } }}
         components={{
           onOff: true,
           torch: true,
@@ -107,8 +101,6 @@ export default function QrScanner({ onScan }: Props) {
           tracker: getTracker(),
         }}
         allowMultiple={false}
-        scanDelay={1000}
-        paused={pause}
       />
     </div>
   );
