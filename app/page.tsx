@@ -13,41 +13,27 @@ type BarcodeItem = {
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    // { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
-    // { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
+    { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
+    { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
-  const [lead, setLead] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<string | null>(null);
 
   // Sezioni
   const [showSubmit, setShowSubmit] = useState(false);
   const [showAddManual, setShowAddManual] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [manualQuantity, setManualQuantity] = useState(1);
-  const [sending, setSending] = useState(false);
-  const [submitResult, setSubmitResult] = useState<string | null>(null);
   const [showScanOverlay, setShowScanOverlay] = useState(false);
 
-  function fetchLead(code: string) {
-    setLoading(true);
-    setError(null);
-
-    fetch(`/api/capture-lead?barcode=${encodeURIComponent(code)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data) => setLead(data))
-      .catch(() => setError("Unable to retrieve lead data. Please try again."))
-      .finally(() => setLoading(false));
-  }
 
   function reset() {
     setBarcodes([]);
-    setLead(null);
     setError(null);
   }
 
@@ -64,7 +50,6 @@ export default function Home() {
         { barcode: code, quantity: 1, url: "test", companyCode },
       ];
     });
-    fetchLead(code);
   }
 
   function addManualBarcode() {
@@ -116,11 +101,8 @@ export default function Home() {
     setShowScanOverlay(true);
   }
 
-  // Sezione submit
-  if (showSubmit) {
-    async function handleProceed() {
-      setSending(true);
-      setSubmitResult(null);
+   async function handleProceed() {
+      setShowLoadingOverlay(true);
       try {
         const res = await fetch("/api/save-lead", {
           method: "POST",
@@ -132,37 +114,122 @@ export default function Home() {
         });
         const data = await res.json();
         if (data.status === "ok") {
-          setSubmitResult("Dati inviati con successo!");
+          setShowLoadingOverlay(false);
+          setShowSubmit(true);
         } else {
-          setSubmitResult("Errore: " + (data.message || "Invio fallito"));
+          setShowLoadingOverlay(false);
         }
       } catch (err) {
-        setSubmitResult("Errore di rete");
-      } finally {
-        setSending(false);
+        setShowLoadingOverlay(false);
       }
     }
 
+    
+
+    const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) setPhoto(file);
+    };
+
+    const handleUpload = async () => {
+      if (!photo) return;
+      setUploading(true);
+      setUploadResult(null);
+      const formData = new FormData();
+      formData.append("file", photo);
+
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        setUploadResult(data.status === "ok" ? "Foto inviata!" : "Errore invio foto");
+      } catch {
+        setUploadResult("Errore di rete");
+      } finally {
+        setUploading(false);
+      }
+    };
+  
+   
+    if (showLoadingOverlay) {
+      return (
+        <main className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-black bg-opacity-80 z-50 fixed inset-0">
+          <div className="flex flex-col items-center">
+            <div className="loader mb-4" />
+            <span className="text-white text-2xl font-bold">Invio dati...</span>
+          </div>
+          {/* Loader CSS */}
+          <style>{`
+          .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+        `}</style>
+        </main>
+      );
+    }
+
+  // Sezione submit
+  if (showSubmit) {
     return (
       <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
-        <h1 className="text-2xl font-bold text-blue-700 mb-8">eccoci</h1>
-        <button
-          className="bg-green-600 text-white px-4 py-2 rounded mb-4"
-          onClick={handleProceed}
-          disabled={sending}
-        >
-          {sending ? "Invio in corso..." : "Proceed"}
-        </button>
-        {submitResult && (
-          <div className="mb-4 text-center text-blue-700">{submitResult}</div>
-        )}
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={() => setShowSubmit(false)}
-          disabled={sending}
-        >
-          Back
-        </button>
+        
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+          {photo && (
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={URL.createObjectURL(photo)}
+                alt="preview"
+                className="w-100  object-cover rounded border"
+              />
+             
+              {uploadResult && (
+                <div className="text-center text-blue-700">{uploadResult}</div>
+              )}
+            </div>
+          )}
+          <label className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-center">
+            {photo ? "Cambia foto" : "Scatta una foto"}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhoto}
+              style={{ display: "none" }}
+            />
+          </label>
+          {photo && <button
+            className="bg-green-600 text-white px-4 py-2 rounded w-full"
+            onClick={handleUpload}
+            disabled={uploading}
+          >
+            {uploading ? "Invio..." : "Invia foto"}
+          </button>}
+          <button
+            className="bg-gray-300 text-black px-4 py-2 rounded w-full"
+            onClick={() => {
+              setShowSubmit(false);
+              setPhoto(null);
+              setUploadResult(null);
+              setManualBarcode("");
+              setManualQuantity(1);
+              setBarcodes([]);
+              setCompanyCode(null);
+            }}
+          >
+            Concludi senza foto
+          </button>
+        </div>
       </main>
     );
   }
@@ -263,7 +330,7 @@ export default function Home() {
             <div className="flex flex-col gap-2 mt-4">
               <button
                 className="bg-green-600 text-white px-4 py-2 rounded w-full"
-                onClick={() => setShowSubmit(true)}
+                onClick={() => handleProceed()}
               >
                 Submit
               </button>
@@ -277,8 +344,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {loading && <p className="mt-4">Loading lead data...</p>}
 
       {error && (
         <div className="text-red-600 text-center mt-4">
