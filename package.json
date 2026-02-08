@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@yudiel/react-qr-scanner": "^2.5.1",
+    "firebase-admin": "^13.6.1",
     "googleapis": "^171.0.0",
     "next": "16.1.4",
     "react": "19.2.3",

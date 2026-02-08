@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import QrScanner from "@/components/QrScanner";
 import CompanyCodeInput from "@/components/CompanyCodeInput";
+import Loader from "@/components/Loader";
+import ScanOverlay from "@/components/ScanOverlay";
 
 type BarcodeItem = {
   barcode: string;
@@ -13,8 +15,8 @@ type BarcodeItem = {
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    { barcode: "123456789012", quantity: 2, url: "test", companyCode: '123' },
-    { barcode: "987654321098", quantity: 1, url: "test", companyCode: '123' },
+    { barcode: "123456789012", quantity: 2, url: "", companyCode: '123' },
+    { barcode: "987654321098", quantity: 1, url: "", companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
@@ -23,9 +25,10 @@ export default function Home() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string>("empty");
 
   // Sezioni
-  const [showSubmit, setShowSubmit] = useState(false);
+  const [showTakePhoto, setShowTakePhoto] = useState(false);
   const [showAddManual, setShowAddManual] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [manualQuantity, setManualQuantity] = useState(1);
@@ -37,6 +40,9 @@ export default function Home() {
     setError(null);
   }
 
+
+
+
   function addBarcode(code: string) {
     setBarcodes((prev) => {
       const idx = prev.findIndex((b) => b.barcode === code);
@@ -47,7 +53,7 @@ export default function Home() {
       }
       return [
         ...prev,
-        { barcode: code, quantity: 1, url: "test", companyCode },
+        { barcode: code, quantity: 1, url: "addBarcode", companyCode },
       ];
     });
   }
@@ -66,7 +72,7 @@ export default function Home() {
         {
           barcode: manualBarcode.trim(),
           quantity: manualQuantity,
-          url: "test",
+          url: photoUrl || "null",
           companyCode,
         },
       ];
@@ -101,28 +107,6 @@ export default function Home() {
     setShowScanOverlay(true);
   }
 
-   async function handleProceed() {
-      setShowLoadingOverlay(true);
-      try {
-        const res = await fetch("/api/save-lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            companyCode,
-            barcodes,
-          }),
-        });
-        const data = await res.json();
-        if (data.status === "ok") {
-          setShowLoadingOverlay(false);
-          setShowSubmit(true);
-        } else {
-          setShowLoadingOverlay(false);
-        }
-      } catch (err) {
-        setShowLoadingOverlay(false);
-      }
-    }
 
     
 
@@ -131,56 +115,66 @@ export default function Home() {
       if (file) setPhoto(file);
     };
 
-    const handleUpload = async () => {
-      if (!photo) return;
-      setUploading(true);
-      setUploadResult(null);
-      const formData = new FormData();
-      formData.append("file", photo);
+   const handleUpload = async () => {
+  if (!photo) return;
+  setUploading(true);
+  const formData = new FormData();
+  formData.append("file", photo);
+  setShowLoadingOverlay(true);
 
-      try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        setUploadResult(data.status === "ok" ? "Foto inviata!" : "Errore invio foto");
-      } catch {
-        setUploadResult("Errore di rete");
-      } finally {
-        setUploading(false);
-      }
-    };
+  try {
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+
+    // 1. Calcola i nuovi barcode
+    const updatedBarcodes = barcodes.map(b => ({ ...b, url: data.url }));
+    
+    // 2. Aggiorna lo stato (per la UI)
+    setBarcodes(updatedBarcodes);
+    
+    // 3. Passa i dati "freschi" direttamente alla funzione di invio
+    await uploadGoogleSheet(updatedBarcodes); 
+
+  } catch (err) {
+    setShowLoadingOverlay(false);
+  }
+};
+
+// Modifica la funzione per accettare i barcodes come parametro opzionale
+async function uploadGoogleSheet(barcodesToUpload = barcodes) {
+  setShowLoadingOverlay(true);
   
+  // Ora userà barcodesToUpload (quelli nuovi) invece dello stato barcodes (quello vecchio)
+  console.warn("Invio questi dati:", barcodesToUpload);
+
+  try {
+    const res = await fetch("/api/save-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        companyCode,
+        barcodes: barcodesToUpload, // <--- Importante
+      }),
+    });
+    window.location.reload();
+  } catch (err) {
+    setShowLoadingOverlay(false);
+  }
+}
    
     if (showLoadingOverlay) {
       return (
-        <main className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-black bg-opacity-80 z-50 fixed inset-0">
-          <div className="flex flex-col items-center">
-            <div className="loader mb-4" />
-            <span className="text-white text-2xl font-bold">Invio dati...</span>
-          </div>
-          {/* Loader CSS */}
-          <style>{`
-          .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
-          }
-        `}</style>
-        </main>
+        <Loader/>
       );
     }
+  
+     if(showScanOverlay) {
+      return (
+      <ScanOverlay setShowScanOverlay={setShowScanOverlay}/>
+    )}
 
   // Sezione submit
-  if (showSubmit) {
+  if (showTakePhoto) {
     return (
       <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
         
@@ -218,13 +212,7 @@ export default function Home() {
           <button
             className="bg-gray-300 text-black px-4 py-2 rounded w-full"
             onClick={() => {
-              setShowSubmit(false);
-              setPhoto(null);
-              setUploadResult(null);
-              setManualBarcode("");
-              setManualQuantity(1);
-              setBarcodes([]);
-              setCompanyCode(null);
+              uploadGoogleSheet();
             }}
           >
             Concludi senza foto
@@ -272,6 +260,22 @@ export default function Home() {
       </main>
     );
   }
+
+    if(error) {
+      return (
+        <div className="text-red-600 text-center mt-4">
+          {error}
+          <button
+            onClick={reset}
+            className="block mt-4 underline"
+          >
+            Try again
+          </button>
+        </div>
+      )
+    }
+
+   
 
   return (
     <main className="h-[100dvh] w-screen flex flex-col bg-white">
@@ -330,7 +334,7 @@ export default function Home() {
             <div className="flex flex-col gap-2 mt-4">
               <button
                 className="bg-green-600 text-white px-4 py-2 rounded w-full"
-                onClick={() => handleProceed()}
+                onClick={() => setShowTakePhoto(true)}
               >
                 Submit
               </button>
@@ -358,14 +362,10 @@ export default function Home() {
       )}
 
       {showScanOverlay && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-          onClick={() => setShowScanOverlay(false)}
-          style={{ cursor: "pointer" }}
-        >
-          <span className="text-white text-4xl font-bold">Scan</span>
-        </div>
+        <ScanOverlay setShowScanOverlay={setShowScanOverlay}/>
       )}
     </main>
   );
+
+  
 }
