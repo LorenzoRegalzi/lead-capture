@@ -15,8 +15,8 @@ type BarcodeItem = {
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    { barcode: "123456789012", quantity: 2, url: "", companyCode: '123' },
-    { barcode: "987654321098", quantity: 1, url: "", companyCode: '123' },
+    // { barcode: "123456789012", quantity: 2, url: "", companyCode: '123' },
+    // { barcode: "987654321098", quantity: 1, url: "", companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
@@ -193,7 +193,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
             </div>
           )}
           <label className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-center">
-            {photo ? "Cambia foto" : "Scatta una foto"}
+            {photo ? "Change photo" : "Take photo"}
             <input
               type="file"
               accept="image/*"
@@ -207,7 +207,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
             onClick={handleUpload}
             disabled={uploading}
           >
-            {uploading ? "Invio..." : "Invia foto"}
+            {uploading ? "Send..." : "Send photo"}
           </button>}
           <button
             className="bg-gray-300 text-black px-4 py-2 rounded w-full"
@@ -215,7 +215,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
               uploadGoogleSheet();
             }}
           >
-            Concludi senza foto
+            Skip photo and submit
           </button>
         </div>
       </main>
@@ -336,7 +336,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
                 className="bg-green-600 text-white px-4 py-2 rounded w-full"
                 onClick={() => setShowTakePhoto(true)}
               >
-                Submit
+                Proceed
               </button>
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded w-full"
