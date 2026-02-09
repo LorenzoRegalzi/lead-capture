@@ -9,23 +9,26 @@ import ScanOverlay from "@/components/ScanOverlay";
 type BarcodeItem = {
   barcode: string;
   quantity: number;
-  url: string;
   companyCode: string | null;
+  photo_1: string;
+  photo_2: string;
+  photo_3: string;
+  photo_4: string;
 };
 
 export default function Home() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([
-    // { barcode: "123456789012", quantity: 2, url: "", companyCode: '123' },
-    // { barcode: "987654321098", quantity: 1, url: "", companyCode: '123' },
+    { barcode: "123456789012", quantity: 2, photo_1: "", photo_2: "", photo_3: "", photo_4: "",companyCode: '123' },
+    { barcode: "34353434", quantity: 2, photo_1: "", photo_2: "", photo_3: "", photo_4: "",companyCode: '123' },
     // ...altri dati di test...
   ]);
   const [companyCode, setCompanyCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<any>(null);
+  const MAX_PHOTOS = 4;
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<string | null>(null);
-  const [photoUrl, setPhotoUrl] = useState<string>("empty");
+  const [previewPhoto, setPreviewPhoto] = useState<File | null>(null);
 
   // Sezioni
   const [showTakePhoto, setShowTakePhoto] = useState(false);
@@ -41,8 +44,6 @@ export default function Home() {
   }
 
 
-
-
   function addBarcode(code: string) {
     setBarcodes((prev) => {
       const idx = prev.findIndex((b) => b.barcode === code);
@@ -53,7 +54,15 @@ export default function Home() {
       }
       return [
         ...prev,
-        { barcode: code, quantity: 1, url: "addBarcode", companyCode },
+        { 
+          barcode: code, 
+          quantity: 1, 
+          photo_1: "",
+          photo_2: "",
+          photo_3: "",
+          photo_4: "", 
+          companyCode 
+        },
       ];
     });
   }
@@ -72,7 +81,10 @@ export default function Home() {
         {
           barcode: manualBarcode.trim(),
           quantity: manualQuantity,
-          url: photoUrl || "null",
+          photo_1: "",
+          photo_2: "",
+          photo_3: "",
+          photo_4: "",
           companyCode,
         },
       ];
@@ -108,60 +120,79 @@ export default function Home() {
   }
 
 
+  const removePhoto = (index: number) => () => {
+    setPhotos((prev: any) => {
+      if (!prev) return null;
+      const updated = [...prev];
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
     
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
 
-    const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) setPhoto(file);
+    setPhotos((prev: any) => {
+      if (!prev) return files.slice(0, MAX_PHOTOS);
+      const combined = [...prev, ...files];
+      return combined.slice(0, MAX_PHOTOS);
+    });
     };
 
-   const handleUpload = async () => {
-  if (!photo) return;
-  setUploading(true);
-  const formData = new FormData();
-  formData.append("file", photo);
-  setShowLoadingOverlay(true);
+    const handleUpload = async () => {
+    if (!photos.length) return;
 
-  try {
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
+    setUploading(true);
+    setShowLoadingOverlay(true);
 
-    // 1. Calcola i nuovi barcode
-    const updatedBarcodes = barcodes.map(b => ({ ...b, url: data.url }));
-    
-    // 2. Aggiorna lo stato (per la UI)
-    setBarcodes(updatedBarcodes);
-    
-    // 3. Passa i dati "freschi" direttamente alla funzione di invio
-    await uploadGoogleSheet(updatedBarcodes); 
+    try {
+      const uploadedUrls: string[] = [];
 
-  } catch (err) {
-    setShowLoadingOverlay(false);
-  }
-};
+      for (const ph of photos) {
+        const formData = new FormData();
+        formData.append("file", ph);
 
-// Modifica la funzione per accettare i barcodes come parametro opzionale
-async function uploadGoogleSheet(barcodesToUpload = barcodes) {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        }); 
+
+        const data = await res.json();
+        uploadedUrls.push(data.url);
+      }
+
+      await uploadGoogleSheet(uploadedUrls);
+
+    } catch (err) {
+      console.error(err);
+      setShowLoadingOverlay(false);
+    }
+  };
+
+
+async function uploadGoogleSheet(photoUrls: string[] = []) {
   setShowLoadingOverlay(true);
   
-  // Ora userà barcodesToUpload (quelli nuovi) invece dello stato barcodes (quello vecchio)
-  console.warn("Invio questi dati:", barcodesToUpload);
+  barcodes[0].photo_1 = photoUrls[0] || "";
+  barcodes[0].photo_2 = photoUrls[1] || "";
+  barcodes[0].photo_3 = photoUrls[2] || "";
+  barcodes[0].photo_4 = photoUrls[3] || "";
 
-  try {
-    const res = await fetch("/api/save-lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        companyCode,
-        barcodes: barcodesToUpload, // <--- Importante
-      }),
-    });
-    window.location.reload();
-  } catch (err) {
-    setShowLoadingOverlay(false);
-  }
+  await fetch("/api/save-lead", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      companyCode,
+      barcodes,
+    }),
+  });
+
+  window.location.reload();
 }
-   
+
+
+
     if (showLoadingOverlay) {
       return (
         <Loader/>
@@ -177,32 +208,44 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
   if (showTakePhoto) {
     return (
       <main className="h-[100dvh] w-screen flex flex-col bg-white items-center justify-center">
-        
+         <h2 className="font-semibold mb-4 text-blue-700">Please photograph the display</h2>
         <div className="flex flex-col gap-4 w-full max-w-sm">
-          {photo && (
-            <div className="flex flex-col items-center gap-2">
-              <img
-                src={URL.createObjectURL(photo)}
-                alt="preview"
-                className="w-100  object-cover rounded border"
-              />
-             
-              {uploadResult && (
-                <div className="text-center text-blue-700">{uploadResult}</div>
-              )}
-            </div>
+          {photos && (
+           <div className="grid grid-cols-2 gap-4">
+            {photos.map((p: any, i: number) => (
+              <div key={i} className="flex flex-col gap-2">
+                
+                <img
+                  src={URL.createObjectURL(p)}
+                  className="w-full h-40 object-cover rounded border"
+                />
+
+                <button
+                  className="bg-red-600 text-white px-3 py-2 rounded w-full"
+                  onClick={() => removePhoto(i)}
+                  disabled={uploading}
+                >
+                  Delete
+                </button>
+
+              </div>
+            ))}
+          </div>
+
           )}
           <label className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-center">
-            {photo ? "Change photo" : "Take photo"}
+            Take photo
             <input
               type="file"
               accept="image/*"
               capture="environment"
+              disabled={photos && photos.length >= MAX_PHOTOS}
+              multiple
               onChange={handlePhoto}
               style={{ display: "none" }}
             />
           </label>
-          {photo && <button
+          {photos && <button
             className="bg-green-600 text-white px-4 py-2 rounded w-full"
             onClick={handleUpload}
             disabled={uploading}
@@ -260,6 +303,26 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
       </main>
     );
   }
+
+  {previewPhoto && (
+  <div
+    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+    onClick={() => setPreviewPhoto(null)}
+  >
+    <img
+      src={URL.createObjectURL(previewPhoto)}
+      className="max-w-full max-h-full object-contain"
+    />
+
+    {/* CHIUDI */}
+    <button
+      onClick={() => setPreviewPhoto(null)}
+      className="absolute top-4 right-4 text-white text-3xl"
+    >
+      ✕
+    </button>
+  </div>
+)}
 
     if(error) {
       return (
@@ -321,7 +384,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
                     </button>
                     <span className="text-lg font-semibold">x{item.quantity}</span>
                     <button
-                      className="bg-gray-300 text-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-gray-400 active:bg-gray-500"
+                      className="bg-gray-300 text-black rounded-full w-10 h-20 flex items-center justify-center text-2xl font-bold transition hover:bg-gray-400 active:bg-gray-500"
                       onClick={() => decrement(idx)}
                       aria-label="Decrement"
                     >
@@ -330,7 +393,14 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
                   </div>
                 </li>
               ))}
+                <button
+              className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+              onClick={() => setShowAddManual(true)}
+            >
+              Add
+            </button>
             </ul>
+          
             <div className="flex flex-col gap-2 mt-4">
               <button
                 className="bg-green-600 text-white px-4 py-2 rounded w-full"
@@ -338,12 +408,7 @@ async function uploadGoogleSheet(barcodesToUpload = barcodes) {
               >
                 Proceed
               </button>
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
-                onClick={() => setShowAddManual(true)}
-              >
-                Add
-              </button>
+              
             </div>
           </div>
         </div>
