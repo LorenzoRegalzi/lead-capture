@@ -8,6 +8,7 @@ type BarcodeItem = {
   photo_2: string;
   photo_3: string;
   photo_4: string;
+  delete_link: string;
 };
 
 export function useBarcodeManager() {
@@ -18,6 +19,7 @@ export function useBarcodeManager() {
   const [photos, setPhotos] = useState<any>(null);
   const MAX_PHOTOS = 4;
   const [uploading, setUploading] = useState(false);
+    const [showFinishProcess, setShowFinishProcess] = useState(false);
 
   const reset = () => {
     setBarcodes([]);
@@ -41,6 +43,7 @@ export function useBarcodeManager() {
           photo_2: '',
           photo_3: '',
           photo_4: '',
+          delete_link: '',
           companyCode,
         },
       ];
@@ -65,6 +68,7 @@ export function useBarcodeManager() {
           photo_2: '',
           photo_3: '',
           photo_4: '',
+            delete_link: '',
           companyCode,
         },
       ];
@@ -108,30 +112,30 @@ export function useBarcodeManager() {
     setUploading(true);
     setShowLoadingOverlay(true);
 
-    try {
-      const uploadedUrls: string[] = [];
+    const uploadedUrls: string[] = [];
+    let submissionId = crypto.randomUUID();
 
-      for (const ph of photos) {
-        const formData = new FormData();
-        formData.append('file', ph);
+    for (const ph of photos) {
+    const formData = new FormData();
+    formData.append('file', ph);
+    formData.append('submissionId', submissionId);
 
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await res.json();
+    await fetch(`/api/upload?submissionId=${submissionId}`, {
+        method: 'POST',
+        body: formData,
+    }).then(async (r) => {
+        const data = await r.json();
         uploadedUrls.push(data.url);
-      }
-
-      await uploadGoogleSheet(uploadedUrls);
-    } catch (err) {
-      console.error(err);
-      setShowLoadingOverlay(false);
+    }).catch((err) => {
+        console.error('Upload failed:', err);
+        setError('Failed to save lead. Please try again.');
+    });
+    
     }
+    await uploadGoogleSheet(uploadedUrls, submissionId);
   };
 
-  const uploadGoogleSheet = async (photoUrls: string[] = []) => {
+  const uploadGoogleSheet = async (photoUrls: string[] = [], submissionId: string) => {
     setShowLoadingOverlay(true);
 
     if (barcodes.length > 0) {
@@ -139,6 +143,7 @@ export function useBarcodeManager() {
       barcodes[0].photo_2 = photoUrls[1] || '';
       barcodes[0].photo_3 = photoUrls[2] || '';
       barcodes[0].photo_4 = photoUrls[3] || '';
+      barcodes[0].delete_link = `https://lead-capture-three.vercel.app/delete/${submissionId}`;
     }
 
     await fetch('/api/save-lead', {
@@ -148,9 +153,14 @@ export function useBarcodeManager() {
         companyCode,
         barcodes,
       }),
+    }).then(() => {
+      setShowLoadingOverlay(false);
+      setShowFinishProcess(true);
+    }).catch((err) => {
+      console.error(err);
+      setError('Failed to save lead. Please try again.');
+      setShowLoadingOverlay(false);
     });
-
-    window.location.reload();
   };
 
   return {
@@ -169,5 +179,8 @@ export function useBarcodeManager() {
     decrement,
     handlePhoto,
     handleUpload,
+    showFinishProcess,
+    setShowFinishProcess,
   };
 }
+

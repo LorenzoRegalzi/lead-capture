@@ -1,14 +1,14 @@
 
-export default function ScanOverlay({setShowScanOverlay}: {setShowScanOverlay: (show: boolean) => void}) {
+export default function ScanOverlay({setShowScanOverlay, text}: {setShowScanOverlay: (show: boolean) => void, text?: string }) {
   
 
   return (
 <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-blue-600 bg-opacity-80 flex items-center justify-center z-50"
           onClick={() => setShowScanOverlay(false)}
           style={{ cursor: "pointer" }}
         >
-          <span className="text-white text-4xl font-bold">Scan</span>
+          <span className="text-white text-4xl font-bold">{text || "Scan"}</span>
         </div>
     );
 }

@@ -29,6 +29,8 @@ export default function Home() {
     decrement,
     handlePhoto,
     handleUpload,
+    showFinishProcess,
+    setShowFinishProcess
   } = useBarcodeManager();
 
   // Sezioni
@@ -43,6 +45,12 @@ export default function Home() {
 
   if (showLoadingOverlay) {
     return <Loader />;
+  }
+
+  if (showFinishProcess) {
+    return <ScanOverlay setShowScanOverlay={() => {
+      window.location.reload();
+    }} text="Completed"/>;
   }
 
   if (showScanOverlay) {
