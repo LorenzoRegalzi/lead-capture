@@ -4,7 +4,7 @@ export default function ScanOverlay({setShowScanOverlay, text}: {setShowScanOver
 
   return (
 <div
-          className="fixed inset-0 bg-blue-600 bg-opacity-80 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-green-600 bg-opacity-80 flex items-center justify-center z-50"
           onClick={() => setShowScanOverlay(false)}
           style={{ cursor: "pointer" }}
         >
