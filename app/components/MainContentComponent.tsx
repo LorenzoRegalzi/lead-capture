@@ -48,6 +48,12 @@ export default function MainContentComponent({
               </span>
             </h2>
             <ul className="flex-1">
+                <button
+                className="bg-blue-950 text-white px-4 py-2 rounded w-full mb-4"
+                onClick={() => setShowAddManual(true)}
+              >
+                Add barcode manually
+              </button>
               {barcodes.map((item, idx) => (
                 <li
                   key={item.barcode + idx}
@@ -57,7 +63,7 @@ export default function MainContentComponent({
                   <span className="font-mono">{item.barcode}</span>
                   <div className="flex items-center gap-2">
                     <button
-                      className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-blue-700 active:bg-blue-800"
+                      className="bg-blue-950 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-blue-700 active:bg-blue-800"
                       onClick={() => increment(idx)}
                       aria-label="Increment"
                     >
@@ -74,12 +80,7 @@ export default function MainContentComponent({
                   </div>
                 </li>
               ))}
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded w-full"
-                onClick={() => setShowAddManual(true)}
-              >
-                Add
-              </button>
+              
             </ul>
 
             <div className="flex flex-col gap-2 mt-4">

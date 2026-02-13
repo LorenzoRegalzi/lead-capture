@@ -30,7 +30,7 @@ export default function Home() {
     handlePhoto,
     handleUpload,
     showFinishProcess,
-    setShowFinishProcess
+    deletePhoto
   } = useBarcodeManager();
 
   // Sezioni
@@ -69,6 +69,7 @@ export default function Home() {
         uploading={uploading}
         handlePhoto={handlePhoto}
         handleUpload={handleUpload}
+        deletePhoto={deletePhoto}
       />
     );
   }

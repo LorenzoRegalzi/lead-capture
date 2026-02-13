@@ -30,7 +30,7 @@ export default function AddManualBarcodeComponent({
           className="w-full mb-4 p-2 border rounded text-black"
         />
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2"
+          className="bg-blue-950 text-white px-4 py-2 rounded w-full mb-2"
           onClick={() => {
             onAdd(manualBarcode, manualQuantity);
             setManualBarcode('');

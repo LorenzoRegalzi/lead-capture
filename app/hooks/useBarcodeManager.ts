@@ -163,6 +163,13 @@ export function useBarcodeManager() {
     });
   };
 
+  const deletePhoto = (index: number) => {
+    setPhotos((prevPhotos:any) => {
+      if (!prevPhotos) return null;
+      return prevPhotos.filter((_:any, i:any) => i !== index);
+    });
+  };
+
   return {
     barcodes,
     companyCode,
@@ -181,6 +188,7 @@ export function useBarcodeManager() {
     handleUpload,
     showFinishProcess,
     setShowFinishProcess,
+    deletePhoto,
   };
 }
 

@@ -5,27 +5,30 @@ export default function TakePhotoComponent({
   uploading,
   handlePhoto,
   handleUpload,
+  deletePhoto,
 }: {
   photos: File[] | null;
   uploading: boolean;
   handlePhoto: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleUpload: () => void;
+  deletePhoto: (index: number) => void;
 }) {
   return (
-    <main className="h-dvh w-screen flex flex-col bg-white items-center justify-center">
-      <h2 className="font-semibold mb-4 text-blue-700">Please photograph the display</h2>
-      <div className="flex flex-col gap-4 w-full max-w-sm">
+    <main className="h-dvh w-screen flex flex-col bg-white items-center">
+      <h2 className="font-semibold mt-4 mb-4 text-blue-950">Please photograph the display</h2>
+      <div className="flex flex-col gap-4 w-full max-w-sm flex-grow overflow-y-auto">
+        
         {photos && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4">
             {photos.map((p: any, i: number) => (
-              <div key={i} className="flex flex-col gap-2">
+              <div key={i} className="flex items-center gap-4 w-full justify-between">
                 <img
                   src={URL.createObjectURL(p)}
-                  className="w-full h-40 object-cover rounded border"
+                  className="w-40 h-40 object-cover rounded border"
                 />
                 <button
-                  className="bg-red-600 text-white px-3 py-2 rounded w-full"
-                  onClick={() => console.warn('Delete functionality not implemented yet')}
+                  className="bg-red-600 text-white px-3 py-2 rounded"
+                  onClick={() => deletePhoto(i)}
                   disabled={uploading}
                 >
                   Delete
@@ -34,7 +37,7 @@ export default function TakePhotoComponent({
             ))}
           </div>
         )}
-        <label className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer text-center">
+        <label className="bg-blue-950 text-white px-4 py-2 rounded cursor-pointer text-center big-label mt-4 mb-4 h-14">
           Take photo
           <input
             type="file"
@@ -46,22 +49,14 @@ export default function TakePhotoComponent({
             style={{ display: 'none' }}
           />
         </label>
-        {photos && (
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded w-full"
-            onClick={handleUpload}
-            disabled={uploading}
-          >
-            {uploading ? 'Send...' : 'Send photo'}
-          </button>
-        )}
+      </div>
+      <div className="mt-auto w-full max-w-sm px-4 mb-4">
         <button
-          className="bg-gray-300 text-black px-4 py-2 rounded w-full"
-          onClick={() => {
-            handleUpload();
-          }}
+          className="bg-green-600 text-white px-4 py-2 rounded w-full"
+          onClick={handleUpload}
+          disabled={uploading}
         >
-          Skip photo and submit
+          {uploading ? 'Send...' : 'Send Data'}
         </button>
       </div>
     </main>
