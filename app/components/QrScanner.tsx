@@ -30,23 +30,6 @@ export default function QrScanner({ onScan, containerRef }: Props) {
   const [pause, setPause] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const devices = useDevices();
-
-  useEffect(() => {
-    if (videoRef.current) {
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-        const track = stream.getVideoTracks()[0];
-        const capabilities:any = track.getCapabilities();
-
-        if (capabilities.zoom) {
-          track.applyConstraints({
-            advanced: [{ zoom: 2 } as any], // Imposta il livello di zoom predefinito
-          });
-        }
-      });
-    }
-  }, []);
-
   function getTracker() {
     switch (tracker) {
       case "outline":
@@ -89,9 +72,10 @@ export default function QrScanner({ onScan, containerRef }: Props) {
         ]}
         
         paused={pause}
-        constraints={{
-          deviceId: deviceId,
-         
+        constraints={
+{         deviceId: deviceId,
+          //@ts-ignore
+          advanced: [{zoom:2}]
         }}
         onScan={(detectedCodes) => {
           handleScan(detectedCodes[0].rawValue);
@@ -110,7 +94,6 @@ export default function QrScanner({ onScan, containerRef }: Props) {
         
         allowMultiple={false}
       />
-      <video ref={videoRef} style={{ display: "none" }} />
     </div>
   );
 }
