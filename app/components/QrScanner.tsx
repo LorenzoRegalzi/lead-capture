@@ -75,7 +75,7 @@ export default function QrScanner({ onScan, containerRef }: Props) {
         constraints={
 {         deviceId: deviceId,
           //@ts-ignore
-          advanced: [{zoom:2}]
+          advanced: [{zoom:3}]
         }}
         onScan={(detectedCodes) => {
           handleScan(detectedCodes[0].rawValue);
