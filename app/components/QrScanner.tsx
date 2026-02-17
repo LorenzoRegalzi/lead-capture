@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Scanner,
   useDevices,
@@ -28,8 +28,24 @@ export default function QrScanner({ onScan, containerRef }: Props) {
   const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
   const [tracker, setTracker] = useState<string | undefined>("centerText");
   const [pause, setPause] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const devices = useDevices();
+
+  useEffect(() => {
+    if (videoRef.current) {
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        const track = stream.getVideoTracks()[0];
+        const capabilities:any = track.getCapabilities();
+
+        if (capabilities.zoom) {
+          track.applyConstraints({
+            advanced: [{ zoom: 2 } as any], // Imposta il livello di zoom predefinito
+          });
+        }
+      });
+    }
+  }, []);
 
   function getTracker() {
     switch (tracker) {
@@ -57,7 +73,7 @@ export default function QrScanner({ onScan, containerRef }: Props) {
   };
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} style={styles.container}>
       <Scanner
         formats={[
             // "code_39",
@@ -71,9 +87,11 @@ export default function QrScanner({ onScan, containerRef }: Props) {
             
             "ean_13", "ean_8"
         ]}
+        
         paused={pause}
         constraints={{
           deviceId: deviceId,
+         
         }}
         onScan={(detectedCodes) => {
           handleScan(detectedCodes[0].rawValue);
@@ -89,8 +107,10 @@ export default function QrScanner({ onScan, containerRef }: Props) {
           finder: true,
           tracker: getTracker(),
         }}
+        
         allowMultiple={false}
       />
+      <video ref={videoRef} style={{ display: "none" }} />
     </div>
   );
 }
