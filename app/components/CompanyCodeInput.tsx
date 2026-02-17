@@ -6,7 +6,7 @@ export default function CompanyCodeInput({ onSubmit }: { onSubmit: (code: string
   return (
     <div className="flex flex-col items-center justify-center h-full w-full relative">
       <div className="flex flex-col items-center justify-center flex-1 w-full">
-        <h2 className="text-xl font-bold mb-4 text-blue-950">Welcome, insert Company code</h2>
+        <h2 className="text-xl font-bold mb-4 text-blue-950 text-center">Welcome,<br /> please insert the store name and/or code</h2>
         <input
           type="text"
           value={code}
