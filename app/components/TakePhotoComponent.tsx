@@ -37,7 +37,7 @@ export default function TakePhotoComponent({
             ))}
           </div>
         )}
-        <label className="bg-blue-950 text-white px-4 py-2 rounded cursor-pointer text-center big-label mt-4 mb-4 h-14 d-flex items-center justify-center">
+        <label className="bg-blue-950 text-white px-4 py-2 rounded cursor-pointer text-center big-label mt-4 mb-4 h-14 flex items-center justify-center">
           Take photo
           <input
             type="file"
