@@ -16,11 +16,12 @@ export default function TakePhotoComponent({
 }) {
   return (
     <main className="h-dvh w-screen flex flex-col bg-white items-center">
-      <h2 className="text-2xl font-semibold mb-2 text-blue-950 text-center" style={{marginTop:"100px"}}>Take a clear picture<br /> of <span style={{textDecoration:'underline'}}>EACH SIDE</span><br /> of the display</h2>
+      
+      <div className="flex flex-col gap-4 w-full max-w-sm flex-grow overflow-y-auto">
+        <h2 className="text-2xl font-semibold mb-2 text-blue-950 text-center" style={{marginTop:"100px"}}>Take a clear picture<br /> of <span style={{textDecoration:'underline'}}>EACH SIDE</span><br /> of the display</h2>
       <div className="w-full relative mb-3" style={{ minHeight: '280px' }}>
         <Image src="/help.jpeg" alt="Help" fill className="object-contain" />
       </div>
-      <div className="flex flex-col gap-4 w-full max-w-sm flex-grow overflow-y-auto">
          <label className="bg-blue-950 text-white px-4 py-2 rounded cursor-pointer text-center big-label mt-4 mb-4 h-14 flex items-center justify-center">
           Take photo
           <input
@@ -57,7 +58,13 @@ export default function TakePhotoComponent({
       <div className="mt-auto w-full max-w-sm px-4 mb-4">
         <button
           className="bg-green-600 text-white px-4 py-2 rounded w-full"
-          onClick={handleUpload}
+          onClick={() => {
+            if (!photos?.length) {
+              alert('Please add at least one photo before sending.');
+              return;
+            }
+            handleUpload();
+          }}
           disabled={uploading}
         >
           {uploading ? 'Send...' : 'Send Data'}

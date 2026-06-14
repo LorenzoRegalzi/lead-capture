@@ -25,8 +25,13 @@ export default function CompanyCodeInput({ onSubmit }: { onSubmit: (storeName: s
       </div>
       <button
         className="w-[90%] mx-auto mb-6 py-3 bg-blue-950 text-white font-semibold text-lg rounded-t fixed left-1/2 -translate-x-1/2 bottom-0 cursor-pointer"
-        disabled={!storeName.trim() || !storeNumber.trim()}
-        onClick={() => onSubmit(storeName.trim(), storeNumber.trim())}
+        onClick={() => {
+          if (!storeName.trim() || !storeNumber.trim()) {
+            alert('Please fill in both Store Name and Store Number.');
+            return;
+          }
+          onSubmit(storeName.trim(), storeNumber.trim());
+        }}
       >
         Continue
       </button>
