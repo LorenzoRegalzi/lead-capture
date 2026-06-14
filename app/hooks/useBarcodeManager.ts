@@ -3,7 +3,8 @@ import { useState } from 'react';
 type BarcodeItem = {
   barcode: string;
   quantity: number;
-  companyCode: string | null;
+  storeName: string | null;
+  storeNumber: string | null;
   photo_1: string;
   photo_2: string;
   photo_3: string;
@@ -13,7 +14,8 @@ type BarcodeItem = {
 
 export function useBarcodeManager() {
   const [barcodes, setBarcodes] = useState<BarcodeItem[]>([]);
-  const [companyCode, setCompanyCode] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState<string | null>(null);
+  const [storeNumber, setStoreNumber] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [photos, setPhotos] = useState<any>(null);
@@ -44,7 +46,8 @@ export function useBarcodeManager() {
           photo_3: '',
           photo_4: '',
           delete_link: '',
-          companyCode,
+          storeName,
+          storeNumber,
         },
       ];
     });
@@ -68,8 +71,9 @@ export function useBarcodeManager() {
           photo_2: '',
           photo_3: '',
           photo_4: '',
-            delete_link: '',
-          companyCode,
+          delete_link: '',
+          storeName,
+          storeNumber,
         },
       ];
     });
@@ -150,7 +154,8 @@ export function useBarcodeManager() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        companyCode,
+        storeName,
+        storeNumber,
         barcodes,
       }),
     }).then(() => {
@@ -172,8 +177,10 @@ export function useBarcodeManager() {
 
   return {
     barcodes,
-    companyCode,
-    setCompanyCode,
+    storeName,
+    storeNumber,
+    setStoreName,
+    setStoreNumber,
     error,
     setError,
     showLoadingOverlay,

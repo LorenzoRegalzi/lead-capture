@@ -15,8 +15,10 @@ import ErrorComponent from "./components/ErrorComponent";
 export default function Home() {
   const {
     barcodes,
-    companyCode,
-    setCompanyCode,
+    storeName,
+    storeNumber,
+    setStoreName,
+    setStoreNumber,
     error,
     setError,
     showLoadingOverlay,
@@ -86,36 +88,33 @@ export default function Home() {
     );
   }
 
-  if (companyCode == null) {
+  if (storeName == null || storeNumber == null) {
     return (
       <main className="h-[100dvh] w-screen flex flex-col bg-white">
-      {companyCode == null && (
         <div className="flex-1 flex items-center justify-center p-4">
           <CompanyCodeInput
-            onSubmit={(code) => {
-              setCompanyCode(code);
+            onSubmit={(name, number) => {
+              setStoreName(name);
+              setStoreNumber(number);
             }}
           />
         </div>
-      )}
-    </main>
+      </main>
     );
   }
 
-   if (companyCode !== null) {
-    return (
-      <main className="h-[100dvh] w-screen flex flex-col bg-white">
-     <MainContentComponent
-          companyCode={companyCode}
-          setCompanyCode={setCompanyCode}
-          barcodes={barcodes}
-          increment={increment}
-          decrement={decrement}
-          handleScan={handleScan}
-          setShowAddManual={setShowAddManual}
-          setShowTakePhoto={setShowTakePhoto}
-        />
+  return (
+    <main className="h-[100dvh] w-screen flex flex-col bg-white">
+      <MainContentComponent
+        storeName={storeName}
+        storeNumber={storeNumber}
+        barcodes={barcodes}
+        increment={increment}
+        decrement={decrement}
+        handleScan={handleScan}
+        setShowAddManual={setShowAddManual}
+        setShowTakePhoto={setShowTakePhoto}
+      />
     </main>
-    );
-  }
+  );
 }

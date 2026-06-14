@@ -1,10 +1,9 @@
 import React from 'react';
 import QrScanner from '@/app/components/QrScanner';
-import CompanyCodeInput from '@/app/components/CompanyCodeInput';
 
 type MainContentProps = {
-  companyCode: string | null;
-  setCompanyCode: (code: string) => void;
+  storeName: string;
+  storeNumber: string | null;
   barcodes: { barcode: string; quantity: number }[];
   increment: (idx: number) => void;
   decrement: (idx: number) => void;
@@ -14,8 +13,8 @@ type MainContentProps = {
 };
 
 export default function MainContentComponent({
-  companyCode,
-  setCompanyCode,
+  storeName,
+  storeNumber,
   barcodes,
   increment,
   decrement,
@@ -25,28 +24,17 @@ export default function MainContentComponent({
 }: MainContentProps) {
   return (
     <main className="h-[100dvh] w-screen flex flex-col bg-white">
-      {companyCode == null && (
-        <div className="flex-1 flex items-center justify-center p-4">
-          <CompanyCodeInput
-            onSubmit={(code) => {
-              setCompanyCode(code);
-            }}
-          />
+      <div className="w-full flex flex-col justify-center h-[100vh]">
+        <div className="flex items-center justify-center w-full">
+          <QrScanner onScan={handleScan} />
         </div>
-      )}
-
-      {companyCode !== null && (
-        <div className="w-full flex flex-col justify-center h-[100vh]">
-          <div className="flex items-center justify-center w-full">
-            <QrScanner onScan={handleScan} />
-          </div>
-          <div className="w-full bg-gray-50 border-t border-gray-200 p-4 overflow-y-auto flex-1 flex flex-col">
-            <h2 className="font-semibold mb-2 text-blue-700 flex justify-between items-center">
-              <span>Company code: {companyCode}</span>
-              <span className="text-base text-black font-normal">
-                Total: {barcodes.reduce((acc, cur) => acc + cur.quantity, 0)}
-              </span>
-            </h2>
+        <div className="w-full bg-gray-50 border-t border-gray-200 p-4 overflow-y-auto flex-1 flex flex-col">
+          <h2 className="font-semibold mb-2 text-blue-700 flex justify-between items-center">
+            <span>{storeName} #{storeNumber}</span>
+            <span className="text-base text-black font-normal">
+              Total: {barcodes.reduce((acc, cur) => acc + cur.quantity, 0)}
+            </span>
+          </h2>
             <ul className="flex-1">
                 <button
                 className="bg-blue-950 text-white px-4 py-2 rounded w-full mb-4"
@@ -93,7 +81,6 @@ export default function MainContentComponent({
             </div>
           </div>
         </div>
-      )}
     </main>
   );
 }

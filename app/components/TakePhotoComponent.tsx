@@ -15,7 +15,7 @@ export default function TakePhotoComponent({
 }) {
   return (
     <main className="h-dvh w-screen flex flex-col bg-white items-center">
-      <h2 className="font-semibold mt-4 mb-4 text-blue-950">Please photograph the display</h2>
+      <h2 className="font-semibold mt-4 mb-4 text-blue-950">Please take a clear photo of each side of the display</h2>
       <div className="flex flex-col gap-4 w-full max-w-sm flex-grow overflow-y-auto">
         
         {photos && (
