@@ -119,24 +119,33 @@ export function useBarcodeManager() {
     const uploadedUrls: string[] = [];
     let submissionId = crypto.randomUUID();
 
-    for (const ph of photos) {
-    const formData = new FormData();
-    formData.append('file', ph);
-    formData.append('submissionId', submissionId);
+    let uploadFailed = false;
 
-    await fetch(`/api/upload?submissionId=${submissionId}`, {
+    for (const ph of photos) {
+      const formData = new FormData();
+      formData.append('file', ph);
+
+      const r = await fetch(`/api/upload?submissionId=${submissionId}`, {
         method: 'POST',
         body: formData,
-    }).then(async (r) => {
-        const data = await r.json();
-        uploadedUrls.push(data.url);
-    }).catch((err) => {
-        console.error('Upload failed:', err);
-        setError('Failed to save lead. Please try again.');
-    });
-    
+      });
+
+      if (!r.ok) {
+        console.error('Upload failed:', r.status);
+        setError('Failed to upload photo. Please try again.');
+        setUploading(false);
+        setShowLoadingOverlay(false);
+        uploadFailed = true;
+        break;
+      }
+
+      const data = await r.json();
+      uploadedUrls.push(data.url);
     }
-    await uploadGoogleSheet(uploadedUrls, submissionId);
+
+    if (!uploadFailed) {
+      await uploadGoogleSheet(uploadedUrls, submissionId);
+    }
   };
 
   const uploadGoogleSheet = async (photoUrls: string[] = [], submissionId: string) => {
@@ -147,7 +156,8 @@ export function useBarcodeManager() {
       barcodes[0].photo_2 = photoUrls[1] || '';
       barcodes[0].photo_3 = photoUrls[2] || '';
       barcodes[0].photo_4 = photoUrls[3] || '';
-      barcodes[0].delete_link = `https://lead-capture-three.vercel.app/delete/${submissionId}`;
+      //barcodes[0].delete_link = `https://lead-capture-three.vercel.app/delete/${submissionId}`;
+      "";
     }
 
     await fetch('/api/save-lead', {
