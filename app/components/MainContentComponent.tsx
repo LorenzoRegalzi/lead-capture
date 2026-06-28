@@ -42,17 +42,24 @@ export default function MainContentComponent({
               >
                 Add barcode manually
               </button>
-              {barcodes.map((item, idx) => (
+              {[...barcodes].reverse().map((item, reversedIdx) => {
+                const originalIdx = barcodes.length - 1 - reversedIdx;
+                const isLatest = reversedIdx === 0;
+                return (
                 <li
-                  key={item.barcode + idx}
-                  className="flex justify-between items-center py-1 text-black mb-2"
+                  key={item.barcode + originalIdx}
+                  className={`flex justify-between items-center py-1 text-black mb-2 px-2 rounded-lg transition-all ${
+                    isLatest
+                      ? 'bg-linear-to-r from-blue-950/20 to-transparent border-l-4 border-blue-950 font-semibold'
+                      : ''
+                  }`}
                   style={{ height: '60px' }}
                 >
                   <span className="font-mono">{item.barcode}</span>
                   <div className="flex items-center gap-2 ">
                     <button
                       className="bg-blue-950 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-blue-700 active:bg-blue-800 rounded-button"
-                      onClick={() => increment(idx)}
+                      onClick={() => increment(originalIdx)}
                       aria-label="Increment"
                     >
                       +
@@ -60,14 +67,15 @@ export default function MainContentComponent({
                     <span className="text-lg font-semibold">x{item.quantity}</span>
                     <button
                       className="bg-gray-300 text-black rounded-full w-10 h-10  flex items-center justify-center text-2xl font-bold transition hover:bg-gray-400 active:bg-gray-500 rounded-button"
-                      onClick={() => decrement(idx)}
+                      onClick={() => decrement(originalIdx)}
                       aria-label="Decrement"
                     >
                       −
                     </button>
                   </div>
                 </li>
-              ))}
+                );
+              })}
               
             </ul>
 

@@ -6,6 +6,7 @@ import CompanyCodeInput from "@/app/components/CompanyCodeInput";
 import Loader from "@/app/components/Loader";
 import ScanOverlay from "@/app/components/ScanOverlay";
 import { useBarcodeManager } from "./hooks/useBarcodeManager";
+import { VALID_BARCODES } from "./lib/validBarcodes";
 import TakePhotoComponent from "./components/TakePhotoComponent";
 import AddManualBarcodeComponent from "./components/AddManualBarcodeComponent";
 import MainContentComponent from "./components/MainContentComponent";
@@ -35,12 +36,22 @@ export default function Home() {
     deletePhoto
   } = useBarcodeManager();
 
+
   // Sezioni
   const [showTakePhoto, setShowTakePhoto] = useState(false);
   const [showAddManual, setShowAddManual] = useState(false);
   const [showScanOverlay, setShowScanOverlay] = useState(false);
+  const [scanError, setScanError] = useState(false);
 
   function handleScan(code: string) {
+    // console.log('[scan] scanned:', JSON.stringify(code), '| length:', code.length);
+    // console.log('[scan] match:', VALID_BARCODES.includes(code), '| closest:', VALID_BARCODES.find(b => b.trim() === code.trim()) ?? 'none');
+    if (VALID_BARCODES.length > 0 && !VALID_BARCODES.includes(code)) {
+      setScanError(true);
+      setShowScanOverlay(true);
+      return;
+    }
+    setScanError(false);
     addBarcode(code);
     setShowScanOverlay(true);
   }
@@ -56,7 +67,13 @@ export default function Home() {
   }
 
   if (showScanOverlay) {
-    return <ScanOverlay setShowScanOverlay={setShowScanOverlay} />;
+    return (
+      <ScanOverlay
+        setShowScanOverlay={(v) => { setScanError(false); setShowScanOverlay(v); }}
+        error={scanError}
+        text={scanError ? 'Error, this barcode is not recognized. Try again.' : undefined}
+      />
+    );
   }
   
 
