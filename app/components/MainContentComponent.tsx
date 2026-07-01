@@ -50,7 +50,7 @@ export default function MainContentComponent({
                   key={item.barcode + originalIdx}
                   className={`flex justify-between items-center py-1 text-black mb-2 px-2 rounded-lg transition-all ${
                     isLatest
-                      ? 'bg-linear-to-r from-blue-950/20 to-transparent border-l-4 border-blue-950 font-semibold'
+                      ? 'border-2 border-blue-950 font-semibold rounded-lg'
                       : ''
                   }`}
                   style={{ height: '60px' }}

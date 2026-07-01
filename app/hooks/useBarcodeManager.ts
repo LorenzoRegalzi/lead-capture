@@ -33,8 +33,8 @@ export function useBarcodeManager() {
       const idx = prev.findIndex((b) => b.barcode === code);
       if (idx !== -1) {
         const updated = [...prev];
-        updated[idx].quantity += 1;
-        return updated;
+        const item = updated.splice(idx, 1)[0];
+        return [...updated, { ...item, quantity: item.quantity + 1 }];
       }
       return [
         ...prev,
@@ -59,8 +59,8 @@ export function useBarcodeManager() {
       const idx = prev.findIndex((b) => b.barcode === manualBarcode.trim());
       if (idx !== -1) {
         const updated = [...prev];
-        updated[idx].quantity += manualQuantity;
-        return updated;
+        const item = updated.splice(idx, 1)[0];
+        return [...updated, { ...item, quantity: item.quantity + manualQuantity }];
       }
       return [
         ...prev,
