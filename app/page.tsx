@@ -77,9 +77,15 @@ export default function Home() {
   }
   
 
-  {error && (
-    <ErrorComponent error={error} onReset={reset} />
-  )}
+  if (error) {
+    return (
+      <ErrorComponent
+        error={error}
+        onReset={reset}
+        onRetry={() => { setError(null); handleUpload(); }}
+      />
+    );
+  }
 
   if (showTakePhoto) {
     return (

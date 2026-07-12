@@ -160,22 +160,24 @@ export function useBarcodeManager() {
       "";
     }
 
-    await fetch('/api/save-lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        storeName,
-        storeNumber,
-        barcodes,
-      }),
-    }).then(() => {
+    try {
+      const r = await fetch('/api/save-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storeName, storeNumber, barcodes }),
+      });
+
+      if (!r.ok) {
+        throw new Error(`Server error: ${r.status}`);
+      }
+
       setShowLoadingOverlay(false);
       setShowFinishProcess(true);
-    }).catch((err) => {
+    } catch (err) {
       console.error(err);
       setError('Failed to save lead. Please try again.');
       setShowLoadingOverlay(false);
-    });
+    }
   };
 
   const deletePhoto = (index: number) => {
