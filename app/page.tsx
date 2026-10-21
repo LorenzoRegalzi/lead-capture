@@ -1,143 +1,141 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import QrScanner from "@/app/components/QrScanner";
+import { useState } from "react";
 import CompanyCodeInput from "@/app/components/CompanyCodeInput";
 import Loader from "@/app/components/Loader";
 import ScanOverlay from "@/app/components/ScanOverlay";
-import { useBarcodeManager } from "./hooks/useBarcodeManager";
-import { VALID_BARCODES } from "./lib/validBarcodes";
-import TakePhotoComponent from "./components/TakePhotoComponent";
-import AddManualBarcodeComponent from "./components/AddManualBarcodeComponent";
-import MainContentComponent from "./components/MainContentComponent";
-import ErrorComponent from "./components/ErrorComponent";
+import TakePhoto from "@/app/components/TakePhoto";
+import AddManualBarcode from "@/app/components/AddManualBarcode";
+import MainContent from "@/app/components/MainContent";
+import ErrorMessage from "@/app/components/ErrorMessage";
+import History from "@/app/components/History";
+import { useLeadDraft, type Store } from "@/app/hooks/useLeadDraft";
+import { VALID_BARCODES } from "@/app/lib/validBarcodes";
 
+type Screen =
+  | { kind: "scan" }
+  | { kind: "manual" }
+  | { kind: "photos" }
+  | { kind: "scanResult"; ok: boolean }
+  | { kind: "uploading" }
+  | { kind: "done" }
+  | { kind: "error"; message: string }
+  | { kind: "history" };
 
 export default function Home() {
-  const {
-    barcodes,
-    storeName,
-    storeNumber,
-    setStoreName,
-    setStoreNumber,
-    error,
-    setError,
-    showLoadingOverlay,
-    photos,
-    uploading,
-    reset,
-    addBarcode,
-    addManualBarcode,
-    increment,
-    decrement,
-    handlePhoto,
-    handleUpload,
-    showFinishProcess,
-    deletePhoto
-  } = useBarcodeManager();
+  const lead = useLeadDraft();
+  const [screen, setScreen] = useState<Screen>({ kind: "scan" });
+  // prefills the store form when going back from the scanner
+  const [previousStore, setPreviousStore] = useState<Store | null>(null);
 
-
-  // Sezioni
-  const [showTakePhoto, setShowTakePhoto] = useState(false);
-  const [showAddManual, setShowAddManual] = useState(false);
-  const [showScanOverlay, setShowScanOverlay] = useState(false);
-  const [scanError, setScanError] = useState(false);
+  function handleBackToStore() {
+    setPreviousStore(lead.store);
+    lead.setStore(null);
+  }
 
   function handleScan(code: string) {
-    // console.log('[scan] scanned:', JSON.stringify(code), '| length:', code.length);
-    // console.log('[scan] match:', VALID_BARCODES.includes(code), '| closest:', VALID_BARCODES.find(b => b.trim() === code.trim()) ?? 'none');
-    if (VALID_BARCODES.length > 0 && !VALID_BARCODES.includes(code)) {
-      setScanError(true);
-      setShowScanOverlay(true);
-      return;
-    }
-    setScanError(false);
-    addBarcode(code);
-    setShowScanOverlay(true);
+    const ok = VALID_BARCODES.length === 0 || VALID_BARCODES.includes(code);
+    if (ok) lead.addBarcode(code);
+    setScreen({ kind: "scanResult", ok });
   }
 
-  if (showLoadingOverlay) {
-    return <Loader />;
+  async function handleSubmit() {
+    setScreen({ kind: "uploading" });
+    const result = await lead.submit();
+    if (result.ok) setPreviousStore(null);
+    setScreen(result.ok ? { kind: "done" } : { kind: "error", message: result.error });
   }
 
-  if (showFinishProcess) {
-    return <ScanOverlay setShowScanOverlay={() => {
-      window.location.reload();
-    }} text="Completed"/>;
+  if (!lead.hydrated) {
+    return null;
   }
 
-  if (showScanOverlay) {
+  // Full-screen overlays, shown regardless of the store step
+  switch (screen.kind) {
+    case "uploading":
+      return <Loader />;
+
+    case "done":
+      return <ScanOverlay onClose={() => setScreen({ kind: "scan" })} text="Completed" />;
+
+    case "scanResult":
+      return (
+        <ScanOverlay
+          onClose={() => setScreen({ kind: "scan" })}
+          error={!screen.ok}
+          text={screen.ok ? undefined : "Error, this barcode is not recognized. Try again."}
+        />
+      );
+
+    case "error":
+      return (
+        <ErrorMessage
+          error={screen.message}
+          onRetry={handleSubmit}
+          onBack={() => setScreen({ kind: "photos" })}
+        />
+      );
+
+    case "history":
+      return <History onBack={() => setScreen({ kind: "scan" })} />;
+  }
+
+  if (!lead.store) {
     return (
-      <ScanOverlay
-        setShowScanOverlay={(v) => { setScanError(false); setShowScanOverlay(v); }}
-        error={scanError}
-        text={scanError ? 'Error, this barcode is not recognized. Try again.' : undefined}
-      />
-    );
-  }
-  
-
-  if (error) {
-    return (
-      <ErrorComponent
-        error={error}
-        onReset={reset}
-        onRetry={() => { setError(null); handleUpload(); }}
-      />
-    );
-  }
-
-  if (showTakePhoto) {
-    return (
-      <TakePhotoComponent
-        photos={photos}
-        uploading={uploading}
-        handlePhoto={handlePhoto}
-        handleUpload={handleUpload}
-        deletePhoto={deletePhoto}
-      />
-    );
-  }
-
-  if (showAddManual) {
-    return (
-      <AddManualBarcodeComponent
-        onAdd={(barcode, quantity) => {
-          addManualBarcode(barcode, quantity);
-          setShowAddManual(false);
-        }}
-        onCancel={() => setShowAddManual(false)}
-      />
-    );
-  }
-
-  if (storeName == null || storeNumber == null) {
-    return (
-      <main className="h-[100dvh] w-screen flex flex-col bg-white">
+      <main className="h-dvh w-screen flex flex-col bg-white relative">
+        <button
+          className="absolute top-4 right-4 z-10 border border-blue-950 text-blue-950 font-semibold px-3 py-1 rounded"
+          onClick={() => setScreen({ kind: "history" })}
+        >
+          History
+        </button>
         <div className="flex-1 flex items-center justify-center p-4">
           <CompanyCodeInput
-            onSubmit={(name, number) => {
-              setStoreName(name);
-              setStoreNumber(number);
-            }}
+            initialName={previousStore?.name}
+            initialNumber={previousStore?.number}
+            onSubmit={(name, number) => lead.setStore({ name, number })}
           />
         </div>
       </main>
     );
   }
 
-  return (
-    <main className="h-[100dvh] w-screen flex flex-col bg-white">
-      <MainContentComponent
-        storeName={storeName}
-        storeNumber={storeNumber}
-        barcodes={barcodes}
-        increment={increment}
-        decrement={decrement}
-        handleScan={handleScan}
-        setShowAddManual={setShowAddManual}
-        setShowTakePhoto={setShowTakePhoto}
-      />
-    </main>
-  );
+  switch (screen.kind) {
+    case "manual":
+      return (
+        <AddManualBarcode
+          onAdd={(barcode, quantity) => {
+            lead.addBarcode(barcode, quantity);
+            setScreen({ kind: "scan" });
+          }}
+          onCancel={() => setScreen({ kind: "scan" })}
+        />
+      );
+
+    case "photos":
+      return (
+        <TakePhoto
+          photos={lead.photos}
+          processingPhotos={lead.processingPhotos}
+          onAddPhotos={lead.addPhotos}
+          onRemovePhoto={lead.removePhoto}
+          onSubmit={handleSubmit}
+          onBack={() => setScreen({ kind: "scan" })}
+        />
+      );
+
+    case "scan":
+      return (
+        <MainContent
+          store={lead.store}
+          barcodes={lead.barcodes}
+          onIncrement={(barcode) => lead.changeQuantity(barcode, 1)}
+          onDecrement={(barcode) => lead.changeQuantity(barcode, -1)}
+          onScan={handleScan}
+          onOpenManual={() => setScreen({ kind: "manual" })}
+          onProceed={() => setScreen({ kind: "photos" })}
+          onBack={handleBackToStore}
+        />
+      );
+  }
 }

@@ -1,36 +1,40 @@
 import React from 'react';
 import QrScanner from '@/app/components/QrScanner';
+import type { BarcodeEntry, Store } from '@/app/lib/lead';
 
 type MainContentProps = {
-  storeName: string;
-  storeNumber: string | null;
-  barcodes: { barcode: string; quantity: number }[];
-  increment: (idx: number) => void;
-  decrement: (idx: number) => void;
-  handleScan: (code: string) => void;
-  setShowAddManual: (value: boolean) => void;
-  setShowTakePhoto: (value: boolean) => void;
+  store: Store;
+  barcodes: BarcodeEntry[];
+  onIncrement: (barcode: string) => void;
+  onDecrement: (barcode: string) => void;
+  onScan: (code: string) => void;
+  onOpenManual: () => void;
+  onProceed: () => void;
+  onBack: () => void;
 };
 
-export default function MainContentComponent({
-  storeName,
-  storeNumber,
+export default function MainContent({
+  store,
   barcodes,
-  increment,
-  decrement,
-  handleScan,
-  setShowAddManual,
-  setShowTakePhoto,
+  onIncrement,
+  onDecrement,
+  onScan,
+  onOpenManual,
+  onProceed,
+  onBack,
 }: MainContentProps) {
   return (
     <main className="h-[100dvh] w-screen flex flex-col bg-white">
       <div className="w-full flex flex-col justify-center h-[100vh]">
         <div className="flex items-center justify-center w-full">
-          <QrScanner onScan={handleScan} />
+          <QrScanner onScan={onScan} />
         </div>
         <div className="w-full bg-gray-50 border-t border-gray-200 p-4 overflow-y-auto flex-1 flex flex-col">
-          <h2 className="font-semibold mb-2 text-blue-700 flex justify-between items-center">
-            <span>{storeName} #{storeNumber}</span>
+          <h2 className="font-semibold mb-2 text-blue-700 flex justify-between items-center gap-2">
+            <button className="text-blue-950 font-semibold shrink-0" onClick={onBack}>
+              ← Back
+            </button>
+            <span className="truncate">{store.name} #{store.number}</span>
             <span className="text-base text-black font-normal">
               Total: {barcodes.reduce((acc, cur) => acc + cur.quantity, 0)}
             </span>
@@ -38,16 +42,15 @@ export default function MainContentComponent({
             <ul className="flex-1">
                 <button
                 className="bg-blue-950 text-white px-4 py-2 rounded w-full mb-4"
-                onClick={() => setShowAddManual(true)}
+                onClick={onOpenManual}
               >
                 Add barcode manually
               </button>
               {[...barcodes].reverse().map((item, reversedIdx) => {
-                const originalIdx = barcodes.length - 1 - reversedIdx;
                 const isLatest = reversedIdx === 0;
                 return (
                 <li
-                  key={item.barcode + originalIdx}
+                  key={item.barcode}
                   className={`flex justify-between items-center py-1 text-black mb-2 px-2 rounded-lg transition-all ${
                     isLatest
                       ? 'border-2 border-blue-950 font-semibold rounded-lg'
@@ -59,7 +62,7 @@ export default function MainContentComponent({
                   <div className="flex items-center gap-2 ">
                     <button
                       className="bg-blue-950 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold transition hover:bg-blue-700 active:bg-blue-800 rounded-button"
-                      onClick={() => increment(originalIdx)}
+                      onClick={() => onIncrement(item.barcode)}
                       aria-label="Increment"
                     >
                       +
@@ -67,7 +70,7 @@ export default function MainContentComponent({
                     <span className="text-lg font-semibold">x{item.quantity}</span>
                     <button
                       className="bg-gray-300 text-black rounded-full w-10 h-10  flex items-center justify-center text-2xl font-bold transition hover:bg-gray-400 active:bg-gray-500 rounded-button"
-                      onClick={() => decrement(originalIdx)}
+                      onClick={() => onDecrement(item.barcode)}
                       aria-label="Decrement"
                     >
                       −
@@ -82,7 +85,7 @@ export default function MainContentComponent({
             <div className="flex flex-col gap-2 mt-4">
               <button
                 className="bg-green-600 text-white px-4 py-2 rounded w-full"
-                onClick={() => setShowTakePhoto(true)}
+                onClick={onProceed}
               >
                 Proceed
               </button>

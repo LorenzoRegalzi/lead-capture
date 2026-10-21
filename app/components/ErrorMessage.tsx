@@ -1,10 +1,10 @@
-type ErrorComponentProps = {
+type ErrorMessageProps = {
   error: string;
-  onReset: () => void;
+  onBack: () => void;
   onRetry?: () => void;
 };
 
-export default function ErrorComponent({ error, onReset, onRetry }: ErrorComponentProps) {
+export default function ErrorMessage({ error, onBack, onRetry }: ErrorMessageProps) {
   return (
     <div className="h-dvh w-screen flex flex-col items-center justify-center gap-4 px-6">
       <p className="text-red-600 text-center font-semibold">{error}</p>
@@ -17,7 +17,7 @@ export default function ErrorComponent({ error, onReset, onRetry }: ErrorCompone
         </button>
       )}
       <button
-        onClick={onReset}
+        onClick={onBack}
         className="border border-gray-400 text-gray-700 px-6 py-3 rounded w-full max-w-sm"
       >
         Go back
