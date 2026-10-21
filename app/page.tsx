@@ -34,6 +34,8 @@ export default function Home() {
   }
 
   function handleScan(code: string) {
+    // the scanner stays live under the result overlay: ignore reads until it's dismissed
+    if (screen.kind !== "scan") return;
     const ok = VALID_BARCODES.length === 0 || VALID_BARCODES.includes(code);
     if (ok) lead.addBarcode(code);
     setScreen({ kind: "scanResult", ok });
@@ -57,15 +59,6 @@ export default function Home() {
 
     case "done":
       return <ScanOverlay onClose={() => setScreen({ kind: "scan" })} text="Completed" />;
-
-    case "scanResult":
-      return (
-        <ScanOverlay
-          onClose={() => setScreen({ kind: "scan" })}
-          error={!screen.ok}
-          text={screen.ok ? undefined : "Error, this barcode is not recognized. Try again."}
-        />
-      );
 
     case "error":
       return (
@@ -124,18 +117,30 @@ export default function Home() {
         />
       );
 
+    // The scanner stays mounted while the result overlay is shown: restarting the camera
+    // on every scan exhausted it on long inventories (only a full browser restart recovered)
     case "scan":
+    case "scanResult":
       return (
-        <MainContent
-          store={lead.store}
-          barcodes={lead.barcodes}
-          onIncrement={(barcode) => lead.changeQuantity(barcode, 1)}
-          onDecrement={(barcode) => lead.changeQuantity(barcode, -1)}
-          onScan={handleScan}
-          onOpenManual={() => setScreen({ kind: "manual" })}
-          onProceed={() => setScreen({ kind: "photos" })}
-          onBack={handleBackToStore}
-        />
+        <>
+          <MainContent
+            store={lead.store}
+            barcodes={lead.barcodes}
+            onIncrement={(barcode) => lead.changeQuantity(barcode, 1)}
+            onDecrement={(barcode) => lead.changeQuantity(barcode, -1)}
+            onScan={handleScan}
+            onOpenManual={() => setScreen({ kind: "manual" })}
+            onProceed={() => setScreen({ kind: "photos" })}
+            onBack={handleBackToStore}
+          />
+          {screen.kind === "scanResult" && (
+            <ScanOverlay
+              onClose={() => setScreen({ kind: "scan" })}
+              error={!screen.ok}
+              text={screen.ok ? undefined : "Error, this barcode is not recognized. Try again."}
+            />
+          )}
+        </>
       );
   }
 }

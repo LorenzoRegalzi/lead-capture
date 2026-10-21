@@ -1,17 +1,26 @@
+import { useEffect } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "./page";
 import { VALID_BARCODES } from "./lib/validBarcodes";
 
+// Counts scanner mounts: each mount means the camera is started again
+const scannerMounts = vi.hoisted(() => ({ count: 0 }));
+
 // The real scanner needs a camera: replace it with buttons that emit a scan
 vi.mock("@/app/components/QrScanner", () => ({
-  default: ({ onScan }: { onScan: (code: string) => void }) => (
-    <div>
-      <button onClick={() => onScan(VALID_BARCODES[0])}>scan valid</button>
-      <button onClick={() => onScan("0000000000000")}>scan invalid</button>
-    </div>
-  ),
+  default: function MockScanner({ onScan }: { onScan: (code: string) => void }) {
+    useEffect(() => {
+      scannerMounts.count++;
+    }, []);
+    return (
+      <div>
+        <button onClick={() => onScan(VALID_BARCODES[0])}>scan valid</button>
+        <button onClick={() => onScan("0000000000000")}>scan invalid</button>
+      </div>
+    );
+  },
 }));
 
 vi.mock("@/app/lib/compressImage", () => ({
@@ -90,6 +99,23 @@ describe("lead capture flow", () => {
     await user.click(screen.getByText("Tap anywhere to continue"));
     expect(screen.queryByText("0000000000000")).not.toBeInTheDocument();
     expect(screen.getByText("Total: 1")).toBeInTheDocument();
+  });
+
+  it("keeps the camera running across scans and ignores reads while the overlay is open", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+    await enterStore(user);
+    const mountsBefore = scannerMounts.count;
+
+    await user.click(screen.getByRole("button", { name: "scan valid" }));
+    // a second read while "Item scanned" is still shown must not count
+    await user.click(screen.getByRole("button", { name: "scan valid" }));
+    await user.click(screen.getByText("Tap anywhere to continue"));
+    await scanValid(user);
+    await scanValid(user);
+
+    expect(screen.getByText("x3")).toBeInTheDocument();
+    expect(scannerMounts.count).toBe(mountsBefore);
   });
 
   it("changes quantities by exactly one and removes at zero", async () => {
