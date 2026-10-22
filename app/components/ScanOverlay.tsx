@@ -1,10 +1,10 @@
 
 export default function ScanOverlay({
-  setShowScanOverlay,
+  onClose,
   text,
   error,
 }: {
-  setShowScanOverlay: (show: boolean) => void;
+  onClose: () => void;
   text?: string;
   error?: boolean;
 }) {
@@ -13,7 +13,7 @@ export default function ScanOverlay({
       className={`fixed inset-0 flex items-center justify-center z-50 flex-col bg-opacity-80 ${
         error ? 'bg-red-600' : 'bg-green-600'
       }`}
-      onClick={() => setShowScanOverlay(false)}
+      onClick={onClose}
       style={{ cursor: 'pointer' }}
     >
       <span className="text-white text-4xl font-bold text-center px-6">

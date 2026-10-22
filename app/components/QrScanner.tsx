@@ -1,87 +1,50 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import {
-  Scanner,
-  useDevices,
-  outline,
-  boundingBox,
-  centerText,
-} from "@yudiel/react-qr-scanner";
+import { useState } from "react";
+import { Scanner, centerText } from "@yudiel/react-qr-scanner";
+
+const SCAN_PAUSE_MS = 500;
 
 const styles = {
   container: {
     width: 400,
     margin: "auto",
   },
-  controls: {
-    marginBottom: 8,
-  },
 };
 
 type Props = {
   onScan: (barcode: string) => void;
-  containerRef?: React.RefObject<HTMLDivElement> | null;
 };
 
-export default function QrScanner({ onScan, containerRef }: Props) {
-  const [deviceId, setDeviceId] = useState<string | undefined>(undefined);
-  const [tracker, setTracker] = useState<string | undefined>("centerText");
+export default function QrScanner({ onScan }: Props) {
   const [pause, setPause] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  function getTracker() {
-    switch (tracker) {
-      case "outline":
-        return outline;
-      case "boundingBox":
-        return boundingBox;
-      case "centerText":
-        return centerText;
-      default:
-        return undefined;
-    }
-  }
-
-  const handleScan = async (data: string) => {
+  const handleScan = (data: string) => {
     setPause(true);
     try {
       onScan(data);
-      // Suono feedback
     } catch (error: unknown) {
-      console.log(error);
+      console.error(error);
     } finally {
-      setTimeout(() => setPause(false), 500); // 1 secondo di pausa
+      // short pause so the same barcode isn't scanned twice in a row
+      setTimeout(() => setPause(false), SCAN_PAUSE_MS);
     }
   };
 
   return (
-    <div ref={containerRef} style={styles.container}>
+    <div style={styles.container}>
       <Scanner
-        formats={[
-            // "code_39",
-            // "code_93",
-            // "codabar",
-            // "ean_13",
-            // "ean_8",
-            // "itf",
-            // "upc_a",
-            // "upc_e",      
-            
-            "ean_13", "ean_8"
-        ]}
-        
+        formats={["ean_13", "ean_8"]}
         paused={pause}
-        constraints={
-{         deviceId: deviceId,
-          //@ts-ignore
-          advanced: [{zoom:3}]
+        constraints={{
+          // @ts-expect-error zoom is a valid camera constraint but missing from the DOM typings
+          advanced: [{ zoom: 3 }],
         }}
         onScan={(detectedCodes) => {
           handleScan(detectedCodes[0].rawValue);
         }}
         onError={(error) => {
-          console.log(`onError: ${error}'`);
+          console.error("Scanner error:", error);
         }}
         styles={{ container: { width: "100%" } }}
         components={{
@@ -89,9 +52,8 @@ export default function QrScanner({ onScan, containerRef }: Props) {
           torch: true,
           zoom: true,
           finder: true,
-          tracker: getTracker(),
+          tracker: centerText,
         }}
-        
         allowMultiple={false}
       />
     </div>

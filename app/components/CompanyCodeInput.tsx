@@ -1,8 +1,14 @@
 import { useState } from "react";
 
-export default function CompanyCodeInput({ onSubmit }: { onSubmit: (storeName: string, storeNumber: string) => void }) {
-  const [storeName, setStoreName] = useState("");
-  const [storeNumber, setStoreNumber] = useState("");
+type CompanyCodeInputProps = {
+  onSubmit: (storeName: string, storeNumber: string) => void;
+  initialName?: string;
+  initialNumber?: string;
+};
+
+export default function CompanyCodeInput({ onSubmit, initialName = "", initialNumber = "" }: CompanyCodeInputProps) {
+  const [storeName, setStoreName] = useState(initialName);
+  const [storeNumber, setStoreNumber] = useState(initialNumber);
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full relative">
