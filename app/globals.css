@@ -1,30 +1,22 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens: use them as bg-primary, text-muted, border-line, ... instead of raw colors */
+@theme {
+  --color-primary: #172554;
+  --color-primary-strong: #0f1a3d;
+  --color-primary-soft: #e8ecf7;
+  --color-success: #15803d;
+  --color-success-strong: #116a33;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fdecec;
+  --color-warning-soft: #fef6d8;
+  --color-ink: #111827;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
+  --color-surface: #f8fafc;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 
 :root {
   color-scheme: light;
@@ -33,19 +25,6 @@ body {
 html,
 body {
   background-color: #ffffff;
-}
-
-body, html {
+  color: var(--color-ink);
   overscroll-behavior-y: contain;
-}
-
-button,
-.big-label {
-  min-height: 50px!important;
-  min-width: 50px!important;
-}
-
-.rounded-button {
-  min-height: 50px!important;
-  min-width: 50px!important;
 }

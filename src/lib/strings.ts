@@ -1,0 +1,93 @@
+// Every user-facing text in one place, so wording stays consistent across screens.
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+export const t = {
+  common: {
+    back: "Back",
+    next: "Next",
+    tapToContinue: "Tap anywhere to continue",
+    shareCsv: "Share CSV",
+    step: (current: number, total: number) => `Step ${current} of ${total}`,
+  },
+  store: {
+    title: "New inventory",
+    logoAlt: "myfamily",
+    intro: "Enter the store details to start.",
+    name: "Store name",
+    number: "Store number",
+    history: "History",
+  },
+  scan: {
+    title: "Scan",
+    total: (n: number) => `Total: ${n}`,
+    empty: "Scan a barcode to start.",
+    addManually: "Add manually",
+    needBarcode: "Add at least one barcode to continue.",
+    scanned: "Item scanned",
+    notRecognized: "Barcode not recognized",
+    tryAgain: "Try again.",
+    increment: "Increment",
+    decrement: "Decrement",
+  },
+  manual: {
+    title: "Add manually",
+    barcode: "Barcode",
+    quantity: "Quantity",
+    add: "Add",
+  },
+  photos: {
+    title: "Photos",
+    instructions: "Take a clear photo of each side of the display.",
+    helpAlt: "Example of the photos to take",
+    takePhoto: (count: number, max: number) => `Take photo (${count}/${max})`,
+    photoAlt: (n: number) => `Photo ${n}`,
+    remove: "Remove",
+    processing: "Processing photos…",
+    needPhoto: "Add at least one photo to send the inventory.",
+    send: "Send inventory",
+    sending: "Sending inventory…",
+    sendFailedTitle: "Couldn't send the inventory",
+    retry: "Try again",
+  },
+  done: {
+    title: "Inventory sent",
+    newInventory: "New inventory",
+  },
+  history: {
+    title: "History",
+    empty: "No inventories yet.",
+    summary: (barcodes: number, items: number, photos: number) =>
+      [plural(barcodes, "barcode", "barcodes"), plural(items, "item", "items"), plural(photos, "photo", "photos")].join(" · "),
+    view: "View",
+    resend: "Resend",
+    resending: "Sending…",
+    resendConfirmTitle: "Send it again?",
+    resendConfirmBody: "This inventory was already sent. Sending it again may create a duplicate.",
+    resendConfirm: "Send again",
+    cancel: "Cancel",
+    resendOk: "Inventory sent.",
+    resendFailed: "Resend failed. Check your connection and try again.",
+  },
+  detail: {
+    title: "Inventory",
+    notFound: "Inventory not found.",
+    id: (id: string) => `ID: ${id}`,
+    barcodes: (n: number) => `Barcodes (${n})`,
+    photos: (n: number) => `Photos (${n})`,
+    noPhotos: "No photos were uploaded for this inventory.",
+  },
+  status: {
+    sent: "Sent",
+    failed: "Failed",
+    pending: "Not confirmed",
+  },
+  errors: {
+    missingStore: "Missing store details.",
+    photoUpload: "Failed to upload photo. Please try again.",
+    saveInventory: "Failed to save inventory. Please try again.",
+    historyPhotoUpload: "Photo upload failed",
+    historySave: "Saving the inventory failed",
+    historyResend: "Resend failed",
+  },
+} as const;

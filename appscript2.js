@@ -1,4 +1,4 @@
-// Apps Script web app that receives leads from /api/save-lead and writes them to the Sheet.
+// Apps Script web app that receives inventories from /api/save-inventory and writes them to the Sheet.
 // Setup: Project Settings → Script Properties → add SHEET_ID with the spreadsheet id.
 const SHEET_ID = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
 const SHEET_NAME = "Foglio1";
@@ -21,7 +21,7 @@ function doPost(e) {
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
     const submissionId = payload.submissionId || "";
 
-    // A resend of a lead that is already in the sheet: don't write it twice
+    // A resend of an inventory that is already in the sheet: don't write it twice
     if (submissionId && isAlreadySaved(sheet, submissionId)) {
       return json({ status: "ok", inserted_rows: 0, duplicate: true });
     }

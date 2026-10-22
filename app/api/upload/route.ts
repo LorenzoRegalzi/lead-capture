@@ -1,4 +1,4 @@
-import { bucket } from "@/app/lib/firebase-admin";
+import { bucket } from "@/src/lib/firebase-admin";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
